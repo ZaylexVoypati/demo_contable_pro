@@ -1,0 +1,18 @@
+{
+  "name": "demo-contable-pro-voypati",
+  "version": "1.0.0",
+  "description": "Demo contable en partida doble con billetera detallada, todos los repos de GitHub y esquema profundo del core VoyPati.",
+  "type": "module",
+  "main": "src/main.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "day": "node src/simulate.js",
+    "extract": "node scripts/extract-core-pro.js",
+    "github": "node scripts/github-org-snapshot.js"
+  },
+  "keywords": ["voypati", "contabilidad", "partida-doble", "billetera", "github"],
+  "license": "MIT"
+}

@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Operaciones · Demo Contable Pro — VoyPati</title>
+<style>
+  :root{
+    --bg:#f6f6f7;
+    --card:#ffffff;
+    --fg:hsl(222.2 47.4% 11.2%);
+    --muted-fg:hsl(215.4 16.3% 46.9%);
+    --border:hsl(214.3 31.8% 91.4%);
+    --primary:#FF6B35;
+    --primary-hover:#e85a26;
+    --primary-soft:#ffedd5;
+    --muted-bg:hsl(210 40% 96.1%);
+    --green:#16a34a; --green-bg:#dcfce7;
+    --red:#dc2626;   --red-bg:#fee2e2;
+    --yellow:#ca8a04;--yellow-bg:#fef9c3;
+    --blue:#2563eb;  --blue-bg:#dbeafe;
+    --purple:#9333ea;--purple-bg:#f3e8ff;
+    --orange:#ea580c;--orange-bg:#ffedd5;
+    --teal:#0d9488;  --teal-bg:#ccfbf1;
+    --shadow:0 1px 2px rgba(0,0,0,.05),0 1px 3px rgba(0,0,0,.04);
+  }
+  html.dark{
+    --bg:hsl(222.2 84% 4.9%);
+    --card:hsl(222.2 84% 6.5%);
+    --fg:hsl(210 40% 98%);
+    --muted-fg:hsl(215 20.2% 65.1%);
+    --border:hsl(217.2 32.6% 17.5%);
+    --muted-bg:hsl(217.2 32.6% 12%);
+    --primary:#FF6B35; --primary-hover:#ff804f; --primary-soft:#3a2418;
+    --green-bg:#0f2f1b; --red-bg:#361515; --yellow-bg:#332a0d; --blue-bg:#12223f; --purple-bg:#241235; --orange-bg:#36200f; --teal-bg:#0c2c28;
+    --green:#4ade80; --red:#f87171; --yellow:#facc15; --blue:#60a5fa; --purple:#c084fc; --orange:#fb923c; --teal:#2dd4bf;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);font-size:14px;line-height:1.5}
+  .ic{vertical-align:-3px;flex:none}
+  a{color:var(--primary)}
+  /* Topbar */
+  .topbar{position:sticky;top:0;z-index:40;background:var(--card);border-bottom:1px solid var(--border)}
+  .topbar-inner{max-width:1400px;margin:0 auto;padding:.7rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem}
+  .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#FF6B35,#ff9a62);display:flex;align-items:center;justify-content:center;color:#fff}
+  .brand h1{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
+  .brand p{font-size:.72rem;color:var(--muted-fg)}
+  .spacer{flex:1}
+  .topbar-actions{display:flex;gap:.5rem;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:600;color:var(--muted-fg);background:var(--muted-bg);border:1px solid var(--border);padding:.25rem .7rem;border-radius:9999px}
+  /* Tabs */
+  .tabs{position:sticky;top:52px;z-index:30;background:var(--card);border-bottom:1px solid var(--border)}
+  .tabs-inner{max-width:1400px;margin:0 auto;display:flex;gap:.25rem;overflow-x:auto;padding:0 .75rem}
+  .tab-btn{display:inline-flex;align-items:center;gap:.45rem;padding:.6rem .85rem;font-size:.83rem;font-weight:600;color:var(--muted-fg);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:.15s}
+  .tab-btn:hover{color:var(--fg)}
+  .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+  /* Layout */
+  main{max-width:1400px;margin:0 auto;padding:1.25rem}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+  .space-y{display:flex;flex-direction:column;gap:1.25rem}
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+  .card-pad{padding:1.25rem}
+  .card-title{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+  .card-title h2{font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:.55rem}
+  .card-title h3{font-size:.95rem;font-weight:600}
+  .card-title p{font-size:.8rem;color:var(--muted-fg)}
+  /* Stat cards */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:.9rem}
+  .stat{padding:1rem;display:flex;align-items:center;gap:.9rem}
+  .stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+  .stat-label{font-size:.78rem;color:var(--muted-fg)}
+  .stat-value{font-size:1.25rem;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .stat-sub{font-size:.7rem;color:var(--muted-fg)}
+  .bg-blue{background:var(--blue-bg);color:var(--blue)}
+  .bg-green{background:var(--green-bg);color:var(--green)}
+  .bg-red{background:var(--red-bg);color:var(--red)}
+  .bg-yellow{background:var(--yellow-bg);color:var(--yellow)}
+  .bg-purple{background:var(--purple-bg);color:var(--purple)}
+  .bg-orange{background:var(--orange-bg);color:var(--orange)}
+  .bg-teal{background:var(--teal-bg);color:var(--teal)}
+  .bg-muted{background:var(--muted-bg);color:var(--muted-fg)}
+  .text-green{color:var(--green)} .text-red{color:var(--red)} .text-muted{color:var(--muted-fg)} .text-primary{color:var(--primary)}
+  /* Grid helpers */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+  @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+  .flex{display:flex;align-items:center;gap:.5rem}
+  .flex-between{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+  .fw6{font-weight:600}
+  .mono{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:.78rem}
+  .small{font-size:.72rem}
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:.45rem;padding:.5rem .85rem;border-radius:8px;font-size:.82rem;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.15s;line-height:1;font-family:inherit}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-hover)}
+  .btn-outline{background:var(--card);border-color:var(--border);color:var(--fg)}
+  .btn-outline:hover{background:var(--muted-bg)}
+  .btn-ghost{background:transparent;color:var(--muted-fg)}
+  .btn-ghost:hover{background:var(--muted-bg);color:var(--fg)}
+  .btn-sm{padding:.32rem .6rem;font-size:.72rem;border-radius:6px}
+  .btn-danger{background:var(--red);color:#fff}
+  .btn-danger:hover{opacity:.9}
+  .btn-soft-green{background:var(--green-bg);color:var(--green)}
+  .btn-soft-blue{background:var(--blue-bg);color:var(--blue)}
+  .btn-soft-orange{background:var(--orange-bg);color:var(--orange)}
+  .btn-soft-red{background:var(--red-bg);color:var(--red)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  /* Inputs */
+  .input,.select{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;font-size:.83rem;background:var(--card);color:var(--fg);font-family:inherit}
+  .input:focus,.select:focus{outline:2px solid var(--primary);outline-offset:-1px;border-color:var(--primary)}
+  .field label{display:block;font-size:.72rem;font-weight:600;color:var(--muted-fg);margin-bottom:.3rem}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}
+  /* Tables */
+  .table-wrap{overflow:auto;max-height:560px;border:1px solid var(--border);border-radius:10px}
+  .table{width:100%;border-collapse:collapse;font-size:.83rem;background:var(--card)}
+  .table thead{position:sticky;top:0;z-index:2;background:var(--card)}
+  .table th{text-align:left;padding:.6rem .8rem;font-size:.72rem;font-weight:600;color:var(--muted-fg);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.02em;background:var(--card)}
+  .table td{padding:.6rem .8rem;border-bottom:1px solid var(--border);vertical-align:top}
+  .table tbody tr:hover{background:var(--muted-bg)}
+  .table .clickable{cursor:pointer}
+  .table .ta-r{text-align:right}
+  .table .ta-c{text-align:center}
+  .table .total-row td{font-weight:700;background:var(--muted-bg)}
+  .sub-table{width:100%;border-collapse:collapse;font-size:.8rem;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-top:.25rem}
+  .sub-table th{text-align:left;padding:.45rem .7rem;font-size:.68rem;color:var(--muted-fg);font-weight:600;border-bottom:1px solid var(--border)}
+  .sub-table td{padding:.4rem .7rem;border-bottom:1px solid var(--border)}
+  .sub-table .sum-row td{font-weight:700;background:var(--muted-bg)}
+  /* Badges */
+  .badge{display:inline-flex;align-items:center;gap:.3rem;padding:.15rem .6rem;border-radius:9999px;font-size:.7rem;font-weight:700;white-space:nowrap}
+  .badge-green{background:var(--green-bg);color:var(--green)}
+  .badge-red{background:var(--red-bg);color:var(--red)}
+  .badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+  .badge-blue{background:var(--blue-bg);color:var(--blue)}
+  .badge-purple{background:var(--purple-bg);color:var(--purple)}
+  .badge-orange{background:var(--orange-bg);color:var(--orange)}
+  .badge-teal{background:var(--teal-bg);color:var(--teal)}
+  .badge-muted{background:var(--muted-bg);color:var(--muted-fg)}
+  /* Misc */
+  .empty{padding:2.5rem;text-align:center;color:var(--muted-fg);font-size:.85rem}
+  .divider{height:1px;background:var(--border);margin:.9rem 0}
+  .section-label{font-size:.75rem;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.6rem}
+  .banner{display:flex;align-items:center;gap:.6rem;padding:.8rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;border:1px solid transparent}
+  .banner-ok{background:var(--green-bg);color:var(--green);border-color:var(--green)}
+  .banner-err{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.6rem}
+  .kv-item{padding:.6rem .8rem;border:1px solid var(--border);border-radius:8px;background:var(--card)}
+  .kv-item .k{font-size:.7rem;color:var(--muted-fg);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .kv-item .v{font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums}
+  /* Bars (P&L) */
+  .bar-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.55rem}
+  .bar-row .lbl{width:200px;font-size:.78rem;color:var(--muted-fg);text-align:right;flex:none}
+  .bar-track{flex:1;height:16px;background:var(--muted-bg);border-radius:6px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:6px;transition:width .4s}
+  .bar-row .amt{width:120px;font-size:.78rem;font-weight:600;text-align:right;flex:none;font-variant-numeric:tabular-nums}
+  /* Timeline */
+  .timeline{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem}
+  .tl-step{display:flex;gap:.6rem;align-items:flex-start}
+  .tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex:none}
+  .tl-dot.done{background:var(--green)}
+  .tl-dot.cur{background:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .tl-dot.todo{background:var(--border)}
+  .tl-line{flex:1;border-bottom:1px dashed var(--border);align-self:center}
+  /* Order actions */
+  .order-actions{display:flex;gap:.4rem;flex-wrap:wrap}
+  /* Toast */
+  #toasts{position:fixed;bottom:1rem;right:1rem;z-index:100;display:flex;flex-direction:column;gap:.5rem}
+  .toast{min-width:260px;max-width:380px;padding:.8rem 1rem;border-radius:10px;background:var(--card);border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,.12);font-size:.82rem;display:flex;gap:.6rem;align-items:flex-start;animation:slidein .2s ease}
+  .toast.ok{border-left:4px solid var(--green)}
+  .toast.err{border-left:4px solid var(--red)}
+  @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .legend{display:flex;gap:1rem;font-size:.72rem;color:var(--muted-fg);flex-wrap:wrap}
+  .legend span{display:flex;align-items:center;gap:.35rem}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .badge-lg{padding:.4rem .9rem;font-size:.8rem}
+  .mono-id{font-size:.72rem;color:var(--muted-fg)}
+  summary{cursor:pointer}
+  @media print{body{background:#fff}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+      </div>
+      <div>
+        <h1>Panel de Operaciones · Contabilidad</h1>
+        <p>Demo Contable Pro — Partida doble · Billetera detallada · Repos reales de voypati-tech</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="topbar-actions">
+      <span class="pill" id="entry-count-pill">0 asientos</span>
+      <span class="pill" id="balance-pill">—</span>
+      <button class="btn btn-outline btn-sm" onclick="toggleTheme()" title="Tema claro/oscuro">
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="confirmReset()" title="Reiniciar estado (vuelve a ejecutar el día)">
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Reiniciar
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="confirmReset(true)">
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        Ejecutar día contable
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner" id="tabbar">
+    <button class="tab-btn active" data-tab="panel" onclick="showTab('panel')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Panel</button>
+    <button class="tab-btn" data-tab="orders" onclick="showTab('orders')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>Órdenes</button>
+    <button class="tab-btn" data-tab="journal" onclick="showTab('journal')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Libro Diario</button>
+    <button class="tab-btn" data-tab="trial" onclick="showTab('trial')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>Trial Balance</button>
+    <button class="tab-btn" data-tab="pnl" onclick="showTab('pnl')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg>P&amp;L</button>
+    <button class="tab-btn" data-tab="balance" onclick="showTab('balance')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>Balance General</button>
+    <button class="tab-btn" data-tab="wallet" onclick="showTab('wallet')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>Billetera</button>
+    <button class="tab-btn" data-tab="docs" onclick="showTab('docs')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>Documentos</button>
+    <button class="tab-btn" data-tab="github" onclick="showTab('github')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>GitHub</button>
+  </div>
+</nav>
+
+<main>
+  <!-- ============ PANEL ============ -->
+  <section class="tab-panel active" id="panel">
+    <div class="space-y">
+      <div class="flex-between">
+        <div>
+          <h1 style="font-size:1.5rem;font-weight:700">Panel de Control</h1>
+          <p class="text-muted">Vista general del ecosistema contable VoyPati — día 2026-09-04</p>
+        </div>
+        <div id="dash-banner"></div>
+      </div>
+      <div id="stat-row-1" class="stats-grid"></div>
+      <div id="stat-row-2" class="stats-grid"></div>
+      <div class="grid-2">
+        <div class="card card-pad">
+          <div class="card-title"><h2><span class="stat-icon bg-green" style="width:34px;height:34px"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg></span> Estado de Resultados</h2><a class="btn btn-ghost btn-sm" onclick="showTab('pnl')">Ver P&amp;L →</a></div>
+          <div id="dash-pl"></div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-title"><h2><span class="stat-icon bg-blue" style="width:34px;height:34px"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span> Últimos asientos</h2><a class="btn btn-ghost btn-sm" onclick="showTab('journal')">Ver libro diario →</a></div>
+          <div id="dash-recent"></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card card-pad">
+          <div class="card-title"><h2><span class="stat-icon bg-teal" style="width:34px;height:34px"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span> Billetera (resumen)</h2><a class="btn btn-ghost btn-sm" onclick="showTab('wallet')">Ver billetera →</a></div>
+          <div id="dash-wallet"></div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-title"><h2><span class="stat-icon bg-purple" style="width:34px;height:34px"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></span> GitHub org-wide</h2><a class="btn btn-ghost btn-sm" onclick="showTab('github')">Ver repos →</a></div>
+          <div id="dash-github"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ORDENES ============ -->
+  <section class="tab-panel" id="orders">
+    <div class="space-y">
+      <div>
+        <h1 style="font-size:1.5rem;font-weight:700">Órdenes del Día</h1>
+        <p class="text-muted">Ciclo de vida: pending → accepted → processing → ready → delivering → completed · cada liquidación genera asientos de partida doble</p>
+      </div>
+      <div class="card card-pad">
+        <div class="card-title"><h2>Crear orden para probar</h2><p>Procesa el ciclo completo o avanza estado por estado</p></div>
+        <div class="form-grid">
+          <div class="field"><label>Producto</label><select class="select" id="ord-product"></select></div>
+          <div class="field"><label>Cantidad</label><select class="select" id="ord-qty"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div class="field"><label>Envío (CUP)</label><select class="select" id="ord-ship"><option>25</option><option>30</option><option>35</option><option>40</option><option>45</option></select></div>
+          <div class="field"><label>Cupón</label><select class="select" id="ord-coupon"><option value="">Sin cupón</option><option value="VOY10">VOY10 (10%)</option><option value="BIENVENIDO">BIENVENIDO (5%)</option></select></div>
+          <div class="field"><label>Método de pago</label><select class="select" id="ord-pay">
+            <option value="payment_on_delivery">Pago contra entrega</option>
+            <option value="wallet">Billetera</option>
+            <option value="troypay">TropiPay</option>
+            <option value="qvapay">QvaPay</option>
+          </select></div>
+        </div>
+        <div class="flex-between" style="margin-top:.8rem">
+          <label class="flex" style="font-size:.8rem;color:var(--muted-fg)"><input type="checkbox" id="ord-auto" checked style="accent-color:var(--primary)"> Procesar automáticamente todo el ciclo (pagar + completar)</label>
+          <div class="flex">
+            <button class="btn btn-outline btn-sm" onclick="previewOrder()">Previsualizar</button>
+            <button class="btn btn-primary" onclick="createOrderFromForm()">
+              <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Crear orden
+            </button>
+          </div>
+        </div>
+        <div id="order-preview" style="margin-top:.8rem"></div>
+      </div>
+      <div class="card">
+        <div class="card-pad card-title" style="margin-bottom:0">
+          <h2><span class="stat-icon bg-orange" style="width:34px;height:34px"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></span> Listado de órdenes <span id="orders-count" class="badge badge-muted"></span></h2>
+          <div class="flex"><input class="input" id="ord-search" placeholder="Buscar orden..." style="width:240px" oninput="ordersQuery=this.value;renderOrdersTable()"></div>
+        </div>
+        <div id="orders-table"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LIBRO DIARIO ============ -->
+  <section class="tab-panel" id="journal">
+    <div class="space-y">
+      <div>
+        <h1 style="font-size:1.5rem;font-weight:700">Libro Diario (Journal)</h1>
+        <p class="text-muted">Todos los asientos de partida doble — Debe = Haber siempre</p>
+      </div>
+      <div class="card card-pad">
+        <div class="card-title"><h2>Registrar asiento manual</h2><p>Prueba la partida doble: la suma de débitos debe igualar la de créditos</p></div>
+        <div class="form-grid">
+          <div class="field"><label>Referencia</label><input class="input" id="entry-ref" placeholder="MANUAL / ADJ:..." value="MANUAL"></div>
+          <div class="field" style="grid-column:span 2"><label>Descripción</label><input class="input" id="entry-desc" placeholder="Describe la operación..."></div>
+        </div>
+        <div style="margin-top:.8rem" id="entry-lines"></div>
+        <div class="flex-between" style="margin-top:.8rem">
+          <button class="btn btn-outline btn-sm" onclick="addEntryLine()"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Agregar línea</button>
+          <div class="flex" id="entry-totals"></div>
+        </div>
+        <div style="margin-top:.8rem" class="flex">
+          <button class="btn btn-primary" onclick="submitEntry()">Publicar asiento</button>
+          <span class="small text-muted" style="align-self:center">La publicación se valida con la ecuación contable.</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-pad card-title" style="margin-bottom:0">
+          <h2><span class="stat-icon bg-blue" style="width:34px;height:34px"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span> Asientos publicados <span id="journal-count" class="badge badge-blue"></span></h2>
+          <div class="flex"><svg class="ic text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="journal-search" placeholder="Buscar por ref, descripción o cuenta..." style="width:280px" oninput="journalQuery=this.value;renderJournal()"></div>
+        </div>
+        <div id="journal-table" class="table-wrap"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRIAL BALANCE ============ -->
+  <section class="tab-panel" id="trial">
+    <div class="space-y">
+      <div class="flex-between">
+        <div>
+          <h1 style="font-size:1.5rem;font-weight:700">Balance de Comprobación</h1>
+          <p class="text-muted">Trial balance — totales de débitos y créditos por cuenta</p>
+        </div>
+        <div id="tb-banner"></div>
+      </div>
+      <div class="card">
+        <div id="tb-table"></div>
+      </div>
+      <div class="card card-pad">
+        <div class="card-title"><h2>Catálogo de Cuentas (Chart of Accounts)</h2><p>Replica las cuentas reales del ecosistema VoyPati</p></div>
+        <div id="catalog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ P&L ============ -->
+  <section class="tab-panel" id="pnl">
+    <div class="space-y">
+      <div>
+        <h1 style="font-size:1.5rem;font-weight:700">Estado de Resultados (P&amp;L)</h1>
+        <p class="text-muted">Ingresos − Gastos = Resultado neto · Fórmula consolidada real de getMetricsAll</p>
+      </div>
+      <div id="pl-cards" class="stats-grid"></div>
+      <div class="card card-pad">
+        <div class="card-title"><h2>Ingresos</h2></div>
+        <div id="pl-revenue"></div>
+        <div class="divider"></div>
+        <div class="card-title"><h2>Gastos</h2></div>
+        <div id="pl-expense"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BALANCE ============ -->
+  <section class="tab-panel" id="balance">
+    <div class="space-y">
+      <div class="flex-between">
+        <div>
+          <h1 style="font-size:1.5rem;font-weight:700">Balance General</h1>
+          <p class="text-muted">Activos = Pasivos + Patrimonio (incluye resultado del día)</p>
+        </div>
+        <div id="bs-banner"></div>
+      </div>
+      <div class="stats-grid" id="bs-cards"></div>
+      <div class="card card-pad">
+        <div id="bs-detail"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BILLETERA ============ -->
+  <section class="tab-panel" id="wallet">
+    <div class="space-y">
+      <div class="flex-between">
+        <div>
+          <h1 style="font-size:1.5rem;font-weight:700">Billetera Detallada — CompanyWallet</h1>
+          <p class="text-muted">Movimientos con saldo corriente, CUP y USD, conciliación bancaria (ReconciliationReport)</p>
+        </div>
+        <div class="flex">
+          <label class="flex" style="font-size:.8rem;color:var(--muted-fg)">1 USD =
+            <input class="input" id="usd-rate" type="number" min="1" step="1" style="width:90px;text-align:right" value="250" onchange="state.usd_to_cup=+this.value||250;renderWallet();renderStats()">
+            CUP
+          </label>
+        </div>
+      </div>
+      <div class="stats-grid" id="wallet-cards"></div>
+      <div class="card card-pad">
+        <div class="card-title"><h2>Conciliación Bancaria</h2><p>Saldo esperado vs saldo real por moneda</p></div>
+        <div id="reconcile" class="kv"></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-pad card-title" style="margin-bottom:0"><h2>Movimientos CUP <span id="wallet-cup-count" class="badge badge-blue"></span></h2></div>
+          <div id="wallet-cup" class="table-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-pad card-title" style="margin-bottom:0"><h2>Movimientos USD <span id="wallet-usd-count" class="badge badge-teal"></span></h2></div>
+          <div id="wallet-usd" class="table-wrap"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DOCUMENTOS ============ -->
+  <section class="tab-panel" id="docs">
+    <div class="space-y">
+      <div>
+        <h1 style="font-size:1.5rem;font-weight:700">Documentos y Operaciones</h1>
+        <p class="text-muted">Facturas FAC-2026-XXXXX · retiros · nómina · impuestos · cupones · promotores · gastos operativos</p>
+      </div>
+      <div class="card card-pad">
+        <div class="card-title"><h2>Registrar operación</h2><p>Cada operación genera su asiento de partida doble</p></div>
+        <div class="form-grid">
+          <div class="field"><label>Tipo</label><select class="select" id="op-type" onchange="opType=this.value;renderOpFields()">
+            <option value="invoice">Factura de comisiones (FAC-2026)</option>
+            <option value="withdrawal">Retiro del socio</option>
+            <option value="payroll">Nómina</option>
+            <option value="tax">Impuesto</option>
+            <option value="coupon">Subsidio de cupón</option>
+            <option value="promoter">Comisión de promotor</option>
+            <option value="opex">Gasto operativo</option>
+          </select></div>
+          <div class="field"><label id="op-amount-label">Monto (CUP)</label><input class="input" id="op-amount" type="number" min="0" step="0.01" value="100"></div>
+          <div id="op-extra" class="field"></div>
+        </div>
+        <div style="margin-top:.8rem"><button class="btn btn-primary" onclick="submitOperation()">Registrar y publicar asiento</button></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-pad card-title" style="margin-bottom:0"><h2>Facturas de comisiones <span id="inv-count" class="badge badge-orange"></span></h2></div>
+          <div id="invoices-table" class="table-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-pad card-title" style="margin-bottom:0"><h2>Retiros del socio <span id="wd-count" class="badge badge-red"></span></h2></div>
+          <div id="withdrawals-table" class="table-wrap"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-pad card-title" style="margin-bottom:0"><h2>Operaciones corporativas del día <span id="op-count" class="badge badge-purple"></span></h2></div>
+        <div id="operations-table" class="table-wrap"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GITHUB ============ -->
+  <section class="tab-panel" id="github">
+    <div class="space-y">
+      <div class="flex-between">
+        <div>
+          <h1 style="font-size:1.5rem;font-weight:700">Repositorios reales de voypati-tech</h1>
+          <p class="text-muted">Snapshot org-wide (GitHub API v3) proyectado sobre dominios contables</p>
+        </div>
+        <span class="pill" id="gh-count">0 repos</span>
+      </div>
+      <div id="gh-domains" class="stats-grid"></div>
+      <div class="grid-3">
+        <div class="card card-pad">
+          <div class="card-title"><h3>Reglas del core</h3></div>
+          <div class="kv">
+            <div class="kv-item"><div class="k">Comisión VoyPati</div><div class="v text-primary">10%</div><div class="small text-muted">finance/models.py:197</div></div>
+            <div class="kv-item"><div class="k">Profit conductor</div><div class="v text-primary">90%</div><div class="small text-muted">logistics/models.py:927</div></div>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-title"><h3>Fórmula consolidado</h3></div>
+          <p class="mono small" style="line-height:1.6">win = ingreso − inversión<br>+ mensajería − profit_mensajeros<br>− comisión</p>
+          <p class="small text-muted" style="margin-top:.5rem">GeneralAmount/utils/getMetricsAll.ts:220</p>
+        </div>
+        <div class="card card-pad">
+          <div class="card-title"><h3>Estados de orden</h3></div>
+          <div class="flex" style="flex-wrap:wrap;gap:.4rem" id="gh-statuses"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-pad card-title" style="margin-bottom:0"><h2>Detalle de repositorios</h2><div class="flex"><input class="input" id="gh-search" placeholder="Buscar repo..." style="width:240px" oninput="ghQuery=this.value;renderGitHub()"></div></div>
+        <div id="gh-table" class="table-wrap"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toasts"></div>
+
+<script>
+/* ============================================================
+   MOTOR CONTABLE — PARTIDA DOBLE (port de src/lib, flow, modules)
+   ============================================================ */
+const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+const fmt = n => (Math.round((Number(n) + Number.EPSILON) * 100) / 100).toLocaleString('es-CU',{minimumFractionDigits:2,maximumFractionDigits:2});
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmtDT(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  if(!isNaN(d)) return d.toLocaleDateString('es-CU',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('es-CU',{hour:'2-digit',minute:'2-digit'});
+  return String(iso).slice(0,16).replace('T',' ');
+}
+
+const ACCOUNTS = {
+  "1001": { name:"Caja / Banco (CUP)", type:"asset", detail:"CompanyWallet balance_cup (vpt_express accounting/models.py)" },
+  "1002": { name:"Caja / Banco (USD)", type:"asset", detail:"CompanyWallet balance_usd" },
+  "1100": { name:"Cuentas por Cobrar (clientes)", type:"asset", detail:"Orders is_paid=false / pendientes de cobro" },
+  "1200": { name:"Comisiones por Cobrar (negocios)", type:"asset", detail:"PlatformCommissionConfig → comisión 10% a cobrar a negocios" },
+  "1300": { name:"Inventario de Productos", type:"asset", detail:"OrderItem.cost (inversión en stock)" },
+  "2001": { name:"Impuestos por Pagar (IVA/ITBMS)", type:"liability", detail:"tax_percentage de Invoice (finance/models.py)" },
+  "2100": { name:"Salarios por Pagar", type:"liability", detail:"PayrollMessenger closed/paid (vpt_mercado)" },
+  "2200": { name:"Deuda con Mensajeros", type:"liability", detail:"FoundType.messenger_debt / MessengerType.pending_payment" },
+  "3001": { name:"Capital del Socio", type:"equity", detail:"Aporte inicial de fondos" },
+  "3002": { name:"Utilidades Retenidas", type:"equity", detail:"Resultado acumulado del ejercicio" },
+  "4001": { name:"Ingresos por Ventas", type:"revenue", detail:"order.total_price − shipping (getMetricsAll income_executed)" },
+  "4002": { name:"Ingresos por Mensajería", type:"revenue", detail:"order.shipping_price cobrado al cliente" },
+  "4003": { name:"Ingresos por Comisiones", type:"revenue", detail:"client_commission 10% VoyPati (finance/models.py:197)" },
+  "4004": { name:"Otros Ingresos", type:"revenue", detail:"ajustes y abonos" },
+  "5001": { name:"Costo de Mercancía (COGS)", type:"expense", detail:"Σ items[].cost (inversión)" },
+  "5002": { name:"Gasto de Mensajería (Entregas)", type:"expense", detail:"order.messenger_profit (pago por entrega)" },
+  "5003": { name:"Gasto de Marketing (Cupones)", type:"expense", detail:"coupon_subsidy (CompanyTransaction)" },
+  "5004": { name:"Comisiones de Promotores", type:"expense", detail:"promoter_commission (CompanyTransaction)" },
+  "5005": { name:"Gastos de Nómina", type:"expense", detail:"payroll_messenger (CompanyTransaction)" },
+  "5006": { name:"Gastos Operativos", type:"expense", detail:"arriendo, servicios, leyendas de gasto (ExpenseLegend)" },
+  "5007": { name:"Gastos por Impuestos", type:"expense", detail:"impuesto sobre ventas (Invoice.tax)" },
+  "5008": { name:"Otros Gastos / Ajustes", type:"expense", detail:"manual_adjustment, refund, other" },
+};
+const GROUPS = { asset:'ACTIVOS', liability:'PASIVOS', equity:'PATRIMONIO', revenue:'INGRESOS', expense:'GASTOS' };
+const TYPE_LABEL = { asset:'Activo', liability:'Pasivo', equity:'Patrimonio', revenue:'Ingreso', expense:'Gasto' };
+
+const PRODUCTS = [
+  { name:"Arroz 5kg", price:220, cost:155 },
+  { name:"Aceite 1L", price:90, cost:64 },
+  { name:"Detergente", price:65, cost:46 },
+  { name:"Café 250g", price:120, cost:85 },
+  { name:"Pan de molde", price:45, cost:30 },
+  { name:"Jabón de baño", price:38, cost:26 },
+  { name:"Azúcar 1kg", price:55, cost:38 },
+  { name:"Leche en polvo", price:180, cost:128 },
+];
+const COUPONS = [
+  { code:"VOY10", discount_percentage:10 },
+  { code:"BIENVENIDO", discount_percentage:5 },
+];
+const PAYMENT_METHODS = ["payment_on_delivery","wallet","troypay","qvapay"];
+const PAY_LABELS = { payment_on_delivery:"Contra entrega", wallet:"Billetera", troypay:"TropiPay", qvapay:"QvaPay" };
+const STATUS_BADGES = {
+  pending:    { c:"badge-yellow",  l:"Pendiente" },
+  accepted:   { c:"badge-blue",    l:"Aceptada" },
+  processing: { c:"badge-purple",  l:"Procesando" },
+  ready:      { c:"badge-teal",    l:"Lista" },
+  delivering: { c:"badge-orange",  l:"Enviando" },
+  completed:  { c:"badge-green",   l:"Completada" },
+  cancelled:  { c:"badge-red",     l:"Cancelada" },
+  rejected:   { c:"badge-red",     l:"Rechazada" },
+};
+const STATUS_ORDER = ["pending","accepted","processing","ready","delivering","completed"];
+
+const state = {
+  ledger: { entries:[], accounts:{} },
+  orders: [], invoices: [], withdrawals: [], operations: [],
+  usd_to_cup: 250, invoiceSeq: 1, orderSeq: 0, autoSeq: 0,
+};
+
+/* ---------- Motor de partida doble ---------- */
+function postEntry({ date, ref, description, lines }) {
+  const clean = lines
+    .filter(l => (l.debit ?? 0) !== 0 || (l.credit ?? 0) !== 0)
+    .map(l => ({ account:l.account, debit:round2(l.debit ?? 0), credit:round2(l.credit ?? 0) }));
+  const totalDebit = round2(clean.reduce((a,l) => a + l.debit, 0));
+  const totalCredit = round2(clean.reduce((a,l) => a + l.credit, 0));
+  if (Math.abs(totalDebit - totalCredit) > 0.001)
+    throw new Error(`Asiento desbalanceado en "${description}": Debe ${fmt(totalDebit)} ≠ Haber ${fmt(totalCredit)}`);
+  const entry = { id:uid(), date, ref, description, total:totalDebit, lines:clean };
+  state.ledger.entries.push(entry);
+  for (const l of clean) {
+    const acc = state.ledger.accounts[l.account] || (state.ledger.accounts[l.account] = { debit:0, credit:0, count:0 });
+    acc.debit = round2(acc.debit + l.debit);
+    acc.credit = round2(acc.credit + l.credit);
+    acc.count += 1;
+  }
+  return entry;
+}
+function cashMovements(cashAccounts = ["1001","1002"]) {
+  return state.ledger.entries
+    .flatMap(e => e.lines
+      .filter(l => cashAccounts.includes(l.account))
+      .map(l => ({ date:e.date, ref:e.ref, description:e.description,
+        currency:l.account === "1002" ? "USD" : "CUP",
+        kind:l.debit > 0 ? "in" : "out",
+        amount:l.debit > 0 ? l.debit : l.credit, account:l.account })))
+    .sort((a,b) => (a.date < b.date ? -1 : 1));
+}
+function accountBalances() {
+  const out = {};
+  for (const [code, acc] of Object.entries(state.ledger.accounts)) {
+    const meta = ACCOUNTS[code] || { name:code, type:"asset", detail:"" };
+    const natural = (meta.type === "asset" || meta.type === "expense") ? "debit" : "credit";
+    const balance = round2(acc.debit - acc.credit);
+    out[code] = { code, name:meta.name, type:meta.type, detail:meta.detail,
+      debit:round2(acc.debit), credit:round2(acc.credit), balance,
+      natural_balance:round2(natural === "debit" ? acc.debit - acc.credit : acc.credit - acc.debit),
+      count:acc.count };
+  }
+  return out;
+}
+function trialBalance() {
+  const balances = accountBalances();
+  const totalDebit = round2(Object.values(balances).reduce((a,b) => a + b.debit, 0));
+  const totalCredit = round2(Object.values(balances).reduce((a,b) => a + b.credit, 0));
+  return { balances, totalDebit, totalCredit, balanced: Math.abs(totalDebit - totalCredit) < 0.01 };
+}
+function incomeStatement() {
+  const balances = accountBalances();
+  const byRevenue = Object.values(balances).filter(b => ACCOUNTS[b.code]?.type === "revenue").sort((a,b)=>a.code<b.code?-1:1);
+  const byExpense = Object.values(balances).filter(b => ACCOUNTS[b.code]?.type === "expense").sort((a,b)=>a.code<b.code?-1:1);
+  const revenue = round2(byRevenue.reduce((a,b) => a + b.natural_balance, 0));
+  const expenses = round2(byExpense.reduce((a,b) => a + b.natural_balance, 0));
+  return { revenue, expenses, net_income:round2(revenue - expenses), byRevenue, byExpense,
+    margin: revenue > 0 ? round2(((revenue - expenses) / revenue) * 100) : 0 };
+}
+function balanceSheet() {
+  const balances = accountBalances();
+  const sum = types => round2(Object.values(balances).filter(b => types.includes(b.type)).reduce((a,b) => a + b.natural_balance, 0));
+  const netIncome = incomeStatement().net_income;
+  const assets = sum(["asset"]);
+  const liabilities = sum(["liability"]);
+  const equity = round2(sum(["equity"]) + netIncome);
+  return { assets, liabilities, equity, net_income:netIncome, balanced: Math.abs(assets - (liabilities + equity)) < 0.01 };
+}
+function buildWalletMovements(opening = { cup:0, usd:0 }) {
+  const cash = cashMovements();
+  const cup = [], usd = [];
+  let runCup = opening.cup, runUsd = opening.usd;
+  for (const m of cash) {
+    if (m.currency === "USD") { runUsd = round2(runUsd + (m.kind === "in" ? m.amount : -m.amount)); usd.push({ ...m, balance_after:runUsd }); }
+    else { runCup = round2(runCup + (m.kind === "in" ? m.amount : -m.amount)); cup.push({ ...m, balance_after:runCup }); }
+  }
+  const sumIn = arr => round2(arr.filter(m => m.kind === "in").reduce((a,m) => a + m.amount, 0));
+  const sumOut = arr => round2(arr.filter(m => m.kind === "out").reduce((a,m) => a + m.amount, 0));
+  return {
+    currency_rates:{ usd_to_cup: state.usd_to_cup },
+    opening,
+    closing:{ cup:round2(opening.cup + sumIn(cup) - sumOut(cup)), usd:round2(opening.usd + sumIn(usd) - sumOut(usd)) },
+    total_in:{ cup:sumIn(cup), usd:sumIn(usd) },
+    total_out:{ cup:sumOut(cup), usd:sumOut(usd) },
+    movements:{ cup, usd }, total_movements:cup.length + usd.length,
+  };
+}
+function reconcile(wallet) {
+  const check = (cur, actual) => {
+    const expected = round2(wallet.opening[cur] + wallet.total_in[cur] - wallet.total_out[cur]);
+    return { currency:cur, expected, actual, difference:round2(expected - actual), reconciled:Math.abs(expected - actual) < 0.01 };
+  };
+  return { cup:check("cup", wallet.closing.cup), usd:check("usd", wallet.closing.usd), all_reconciled:true };
+}
+function walletTotalsCup(wallet) {
+  const { usd_to_cup } = wallet.currency_rates;
+  return { closing_cup:round2(wallet.closing.cup + wallet.closing.usd * usd_to_cup),
+    total_in_cup:round2(wallet.total_in.cup + wallet.total_in.usd * usd_to_cup),
+    total_out_cup:round2(wallet.total_out.cup + wallet.total_out.usd * usd_to_cup) };
+}
+
+/* ---------- Órdenes ---------- */
+function createOrder({ items, shipping_price = 0, payment_method = "payment_on_delivery", coupon = null }) {
+  state.orderSeq++;
+  const number = `ORD-${String(state.orderSeq).padStart(4,"0")}`;
+  const subtotal = round2(items.reduce((a,it) => a + it.price * it.quantity, 0));
+  const investment = round2(items.reduce((a,it) => a + (it.cost ?? 0) * it.quantity, 0));
+  const discount = coupon?.discount_percentage ? round2((subtotal * coupon.discount_percentage) / 100) : 0;
+  const taxable = round2(subtotal - discount);
+  const tax_rate = 0;
+  const tax = round2((taxable * tax_rate) / 100);
+  const total_price = round2(taxable + tax + shipping_price);
+  const client_commission = round2(total_price * 0.1);
+  const now = new Date().toISOString();
+  const order = {
+    id:uid(), number, status:"pending", order_type:"in_stock", payment_method,
+    shipping_type:"delivery", currency:"CUP",
+    items:items.map(it => ({ ...it, line_subtotal:round2(it.price * it.quantity), line_cost:round2((it.cost ?? 0) * it.quantity) })),
+    coupon, subtotal, discount, tax_rate, tax, shipping_price:round2(shipping_price),
+    total_price, client_commission, messenger_profit:round2(shipping_price * 0.8),
+    investment, expected_income:subtotal, is_paid:false,
+    events:[{ at:now, status:"pending", note:"Orden creada" }],
+    created_at:now, updated_at:now,
+  };
+  state.orders.push(order);
+  return order;
+}
+function advanceOrder(order) {
+  if (order.status === "completed" || order.status === "cancelled" || order.status === "rejected") return;
+  const idx = STATUS_ORDER.indexOf(order.status);
+  const next = STATUS_ORDER[idx + 1];
+  order.status = next;
+  order.events.push({ at:new Date().toISOString(), status:next, note:next === "completed" ? "Entregada" : "" });
+  order.updated_at = new Date().toISOString();
+  if (next === "completed") processOrder(order, { date:new Date().toISOString(), collection_pct:0.6 });
+}
+function markPaidOrder(order) {
+  if (order.is_paid) return;
+  order.is_paid = true;
+  order.events.push({ at:new Date().toISOString(), status:order.status, note:`Pagada vía ${PAY_LABELS[order.payment_method] || order.payment_method}` });
+  order.updated_at = new Date().toISOString();
+}
+function cancelOrder(order) {
+  if (order.status === "completed" || order.status === "cancelled" || order.status === "rejected") return;
+  order.status = "cancelled";
+  order.events.push({ at:new Date().toISOString(), status:"cancelled", note:"Cancelada por el cliente" });
+  order.updated_at = new Date().toISOString();
+  if (order.is_paid) processOrder(order, { date:new Date().toISOString() });
+}
+function processOrder(order, { date, collection_pct = 0.6 } = {}) {
+  if (order.status === "cancelled" || order.status === "rejected") {
+    if (order.is_paid) {
+      postEntry({ date, ref:`REFUND:${order.number}`, description:`Reembolso orden cancelada ${order.number}`,
+        lines:[ { account:"5008", debit:order.total_price }, { account:"1001", credit:order.total_price } ] });
+    }
+    return;
+  }
+  const saleLines = [
+    { account:"1001", debit:order.total_price },
+    { account:"4001", credit:order.subtotal - order.discount },
+    { account:"4002", credit:order.shipping_price },
+  ];
+  if (order.tax > 0) saleLines.push({ account:"2001", credit:order.tax });
+  postEntry({ date, ref:`SALE:${order.number}`, description:`Venta liquidada ${order.number} (pago ${order.payment_method})`, lines:saleLines });
+  postEntry({ date, ref:`COGS:${order.number}`, description:`Costo de mercancía ${order.number}`, lines:[ { account:"5001", debit:order.investment }, { account:"1300", credit:order.investment } ] });
+  postEntry({ date, ref:`COMM:${order.number}`, description:`Comisión VoyPati 10% ${order.number}`, lines:[ { account:"1200", debit:order.client_commission }, { account:"4003", credit:order.client_commission } ] });
+  const collected = Math.round(order.client_commission * collection_pct * 100) / 100;
+  if (collected > 0) postEntry({ date, ref:`COLL:${order.number}`, description:`Cobro de comisión ${order.number} (${collection_pct * 100}%)`, lines:[ { account:"1001", debit:collected }, { account:"1200", credit:collected } ] });
+  postEntry({ date, ref:`DELIV:${order.number}`, description:`Pago mensajero por entrega ${order.number}`, lines:[ { account:"5002", debit:order.messenger_profit }, { account:"1001", credit:order.messenger_profit } ] });
+}
+
+/* ---------- Operaciones corporativas ---------- */
+function issueInvoice({ date, business, commission_subtotal, tax_percentage = 0 }) {
+  const tax_amount = Math.round((commission_subtotal * tax_percentage) / 100 * 100) / 100;
+  const number = `FAC-2026-${String(state.invoiceSeq++).padStart(5,"0")}`;
+  if (tax_amount > 0) postEntry({ date, ref:`INV:${number}`, description:`Factura de comisiones ${number} — ${business}`,
+    lines:[ { account:"2001", debit:tax_amount }, { account:"5007", credit:tax_amount } ] });
+  const inv = { number, business, subtotal:commission_subtotal, tax_percentage, tax_amount, total:round2(commission_subtotal + tax_amount), status:"issued", issue_date:date };
+  state.invoices.unshift(inv);
+  return inv;
+}
+function processWithdrawal({ date, amount, currency = "CUP", payment_method = "transfer" }) {
+  const cash = currency === "USD" ? "1002" : "1001";
+  postEntry({ date, ref:`WITHDRAW:${amount}${currency}`, description:`Retiro del socio ${amount} ${currency} (${payment_method})`,
+    lines:[ { account:"3001", debit:amount }, { account:cash, credit:amount } ] });
+  const w = { amount, currency, payment_method, status:"completed", date };
+  state.withdrawals.unshift(w);
+  return w;
+}
+function registerCoupon({ date, amount, order }) {
+  const e = postEntry({ date, ref:`COUPON:${order ?? "gral"}`, description:`Subsidio de cupón ${amount} CUP`,
+    lines:[ { account:"5003", debit:amount }, { account:"1001", credit:amount } ] });
+  state.operations.unshift({ kind:"coupon", label:"Subsidio de cupón", amount, date, ref:e.ref, extra:"Gasto de marketing" });
+  return e;
+}
+function registerPromoter({ date, amount, note = "" }) {
+  const e = postEntry({ date, ref:"PROMOTER", description:`Comisión de promotor ${amount} CUP ${note}`.trim(),
+    lines:[ { account:"5004", debit:amount }, { account:"1001", credit:amount } ] });
+  state.operations.unshift({ kind:"promoter", label:"Comisión de promotor", amount, date, ref:e.ref, extra:note });
+  return e;
+}
+function registerPayroll({ date, amount, paid_pct = 1 }) {
+  postEntry({ date, ref:"PAYROLL", description:`Devengo de nómina ${amount} CUP`,
+    lines:[ { account:"5005", debit:amount }, { account:"2100", credit:amount } ] });
+  const paid = Math.round(amount * paid_pct * 100) / 100;
+  if (paid > 0) postEntry({ date, ref:"PAYROLL-PAY", description:`Pago de nómina ${paid} CUP (${paid_pct * 100}%)`,
+    lines:[ { account:"2100", debit:paid }, { account:"1001", credit:paid } ] });
+  state.operations.unshift({ kind:"payroll", label:"Nómina", amount, date, ref:"PAYROLL", extra:`Pago ${paid_pct * 100}% = ${paid} CUP` });
+}
+function registerOperating({ date, amount, concept = "Alquiler local" }) {
+  const e = postEntry({ date, ref:"OPEX", description:`Gasto operativo: ${concept} (${amount} CUP)`,
+    lines:[ { account:"5006", debit:amount }, { account:"1001", credit:amount } ] });
+  state.operations.unshift({ kind:"opex", label:"Gasto operativo", amount, date, ref:e.ref, extra:concept });
+  return e;
+}
+function registerTax({ date, amount, paid_pct = 0.5 }) {
+  postEntry({ date, ref:"TAX", description:`Devengo de impuesto ${amount} CUP`,
+    lines:[ { account:"5007", debit:amount }, { account:"2001", credit:amount } ] });
+  const paid = Math.round(amount * paid_pct * 100) / 100;
+  if (paid > 0) postEntry({ date, ref:"TAX-PAY", description:`Pago de impuesto ${paid} CUP`,
+    lines:[ { account:"2001", debit:paid }, { account:"1001", credit:paid } ] });
+  state.operations.unshift({ kind:"tax", label:"Impuesto", amount, date, ref:"TAX", extra:`Pago ${paid_pct * 100}% = ${paid} CUP` });
+}
+function openDay() {
+  const d = "2026-09-04T08:30:00";
+  postEntry({ date:d, ref:"APERTURA", description:"Aporte de capital del socio", lines:[ { account:"1001", debit:15000 }, { account:"3001", credit:15000 } ] });
+  postEntry({ date:d, ref:"APERTURA", description:"Aporte de capital del socio (USD)", lines:[ { account:"1002", debit:200 }, { account:"3001", credit:200 } ] });
+  postEntry({ date:d, ref:"APERTURA", description:"Compra inicial de inventario", lines:[ { account:"1300", debit:6000 }, { account:"1001", credit:6000 } ] });
+}
+
+/* ---------- PRNG determinista (semilla fija) ---------- */
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- Día contable completo ---------- */
+function runDay() {
+  state.ledger = { entries:[], accounts:{} };
+  state.orders = []; state.invoices = []; state.withdrawals = []; state.operations = [];
+  state.invoiceSeq = 1; state.orderSeq = 0;
+  openDay();
+  const rnd = mulberry32(20260904);
+  const items = buildDay(rnd, 30);
+  let couponTotal = 0;
+  for (const { order, cancelled, date } of items) {
+    if (cancelled) {
+      order.status = "cancelled"; order.is_paid = false;
+      order.events.push({ at:date, status:"cancelled", note:"Cancelada por el cliente" });
+      processOrder(order, { date });
+      continue;
+    }
+    order.is_paid = true;
+    for (const st of ["accepted","processing","ready","delivering"]) order.events.push({ at:date, status:st, note:"" });
+    order.status = "completed";
+    order.events.push({ at:date, status:"completed", note:"Entregada" });
+    processOrder(order, { date, collection_pct:0.6 });
+    if (order.discount > 0) couponTotal += order.discount;
+  }
+  const day = "2026-09-04";
+  const couponSubsidy = Math.round(couponTotal * 100) / 100;
+  if (couponSubsidy > 0) registerCoupon({ date:`${day}T14:00:00`, amount:couponSubsidy });
+  registerPromoter({ date:`${day}T14:05:00`, amount:34.2, note:"5% sobre comisiones de referidos" });
+  registerPayroll({ date:`${day}T18:00:00`, amount:900, paid_pct:1 });
+  registerOperating({ date:`${day}T09:00:00`, amount:250, concept:"Alquiler local" });
+  registerOperating({ date:`${day}T09:30:00`, amount:120, concept:"Servicios (luz/internet)" });
+  registerTax({ date:`${day}T16:00:00`, amount:85, paid_pct:0.5 });
+  const commissionTotal = state.orders.filter(o => o.status === "completed").reduce((a,o) => a + o.client_commission, 0);
+  issueInvoice({ date:`${day}T17:00:00`, business:"Tienda Mercado Central", commission_subtotal:Math.round(commissionTotal * 0.5 * 100) / 100, tax_percentage:5 });
+  issueInvoice({ date:`${day}T17:05:00`, business:"Minimercado La Esquina", commission_subtotal:Math.round(commissionTotal * 0.3 * 100) / 100, tax_percentage:5 });
+  processWithdrawal({ date:`${day}T19:00:00`, amount:400, currency:"CUP", payment_method:"transfer" });
+  postEntry({ date:`${day}T15:00:00`, ref:"USD-COMM", description:"Cobro de comisión en USD (cliente express)",
+    lines:[ { account:"1002", debit:12 }, { account:"4003", credit:12 } ] });
+  postEntry({ date:`${day}T15:30:00`, ref:"USD-OPEX", description:"Gasto en USD (pago de dominio/servidor)",
+    lines:[ { account:"5006", debit:8 }, { account:"1002", credit:8 } ] });
+}
+function buildDay(rnd, n) {
+  const orders = [];
+  const now = new Date("2026-09-04T09:00:00");
+  for (let i = 1; i <= n; i++) {
+    now.setMinutes(now.getMinutes() + 9 + Math.floor(rnd() * 20));
+    const qty = 1 + Math.floor(rnd() * 3);
+    const p = PRODUCTS[Math.floor(rnd() * PRODUCTS.length)];
+    const shipping = 25 + Math.floor(rnd() * 5) * 5;
+    const coupon = rnd() < 0.2 ? COUPONS[Math.floor(rnd() * COUPONS.length)] : null;
+    const cancelled = rnd() < 0.08;
+    const order = createOrder({
+      items:[{ name:p.name, price:p.price, cost:p.cost, quantity:qty }],
+      shipping_price:shipping, coupon,
+      payment_method:PAYMENT_METHODS[Math.floor(rnd() * 4)],
+    });
+    order.created_at = now.toISOString();
+    order.events[0].at = now.toISOString();
+    orders.push({ order, cancelled, date:now.toISOString() });
+  }
+  return orders;
+}
+
+/* ---------- Resumen ---------- */
+function buildSummary() {
+  const pl = incomeStatement();
+  const wallet = buildWalletMovements({ cup:15000, usd:200 });
+  const tb = trialBalance();
+  const processed = state.orders.filter(o => o.status === "completed").length;
+  const cancelled = state.orders.filter(o => ["cancelled","rejected"].includes(o.status)).length;
+  const gmv = round2(state.orders.reduce((a,o) => a + (o.status === "completed" ? o.total_price : 0), 0));
+  const investment = round2(state.orders.reduce((a,o) => a + (o.status === "completed" ? o.investment : 0), 0));
+  const roi = investment > 0 ? (pl.net_income / investment) * 100 : 0;
+  const gross_profit = round2(
+    pl.byRevenue.reduce((a,r) => a + (r.code === "4001" ? r.natural_balance : 0), 0) -
+    (pl.byExpense.find(e => e.code === "5001")?.natural_balance ?? 0));
+  const tot = walletTotalsCup(wallet);
+  return { pl, wallet, tb, processed, cancelled, orders_total:state.orders.length,
+    gmv, investment, roi:round2(roi * 100) / 100, gross_profit,
+    invoices_count:state.invoices.length,
+    invoices_total:round2(state.invoices.reduce((a,i) => a + i.total, 0)),
+    withdrawals_count:state.withdrawals.length,
+    withdrawals_total:round2(state.withdrawals.reduce((a,w) => a + w.amount, 0)),
+    wallet_tot:tot };
+}
+
+/* ============================================================
+   GITHUB — snapshot real embebido (data/github-org-snapshot.json)
+   ============================================================ */
+const GITHUB_SNAPSHOT = {
+  "generated_at":"2026-09-04T20:12:23.948Z",
+  "source":"GitHub API v3 — GET /orgs/voypati-tech/repos (todos los repos)",
+  "org":"voypati-tech","repo_count":22,
+  "repos":[
+    {"repo":"voypati-tech/app_conductor","name":"app_conductor","domain":"app_conductor","domain_label":"App conductor","domain_weight":"mensajería","private":true,"language":"Dart","created_at":"2025-11-05T21:16:08Z","updated_at":"2026-08-31T18:44:20Z","pulls_total":9,"pulls_open":0,"pulls_merged":9,"commits_recent":30,"last_commit":"upd","last_commit_date":"2026-08-31T18:39:54Z"},
+    {"repo":"voypati-tech/app_proveedor","name":"app_proveedor","domain":"app_proveedor","domain_label":"App proveedor","domain_weight":"órdenes","private":true,"language":"Dart","created_at":"2026-01-14T16:36:04Z","updated_at":"2026-09-01T16:09:04Z","pulls_total":4,"pulls_open":0,"pulls_merged":2,"commits_recent":30,"last_commit":"update","last_commit_date":"2026-09-01T15:28:48Z"},
+    {"repo":"voypati-tech/app_ticket","name":"app_ticket","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"HTML","created_at":"2025-11-18T03:02:56Z","updated_at":"2025-11-18T04:49:23Z","pulls_total":0,"pulls_open":0,"pulls_merged":0,"commits_recent":3,"last_commit":"App report add","last_commit_date":"2025-11-18T04:49:07Z"},
+    {"repo":"voypati-tech/cargo_back","name":"cargo_back","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"Python","created_at":"2025-11-05T21:16:56Z","updated_at":"2026-05-08T09:40:24Z","pulls_total":100,"pulls_open":0,"pulls_merged":100,"commits_recent":30,"last_commit":"Create README.md","last_commit_date":"2026-05-08T09:37:01Z"},
+    {"repo":"voypati-tech/geocodig_voypati","name":"geocodig_voypati","error":"GitHub 409 en /repos/voypati-tech/geocodig_voypati/commits"},
+    {"repo":"voypati-tech/geocoding_api_project","name":"geocoding_api_project","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"Python","created_at":"2026-05-30T14:42:08Z","updated_at":"2026-08-27T15:53:33Z","pulls_total":100,"pulls_open":0,"pulls_merged":100,"commits_recent":30,"last_commit":"Merge pull request #199 from voypati-tech/dev","last_commit_date":"2026-08-27T15:28:40Z"},
+    {"repo":"voypati-tech/openwa-ops","name":"openwa-ops","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"Python","created_at":"2026-07-17T13:17:51Z","updated_at":"2026-09-02T15:28:29Z","pulls_total":0,"pulls_open":0,"pulls_merged":0,"commits_recent":14,"last_commit":"chore(security): sanitize sensitive ops metadata","last_commit_date":"2026-09-02T15:21:27Z"},
+    {"repo":"voypati-tech/panel_cargo","name":"panel_cargo","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"JavaScript","created_at":"2025-11-05T21:17:22Z","updated_at":"2026-03-17T20:26:03Z","pulls_total":1,"pulls_open":0,"pulls_merged":1,"commits_recent":30,"last_commit":"Merge pull request #1 from voypati-tech/proveedor","last_commit_date":"2026-03-17T20:25:57Z"},
+    {"repo":"voypati-tech/proveedor_back","name":"proveedor_back","domain":"app_proveedor","domain_label":"App proveedor","domain_weight":"órdenes","private":true,"language":"Python","created_at":"2026-01-14T16:37:47Z","updated_at":"2026-05-08T09:46:31Z","pulls_total":1,"pulls_open":1,"pulls_merged":0,"commits_recent":4,"last_commit":"Create README.md","last_commit_date":"2026-05-08T09:42:47Z"},
+    {"repo":"voypati-tech/taozt0622","name":"taozt0622","error":"GitHub 409 en /repos/voypati-tech/taozt0622/commits"},
+    {"repo":"voypati-tech/voypati_app","name":"voypati_app","domain":"app","domain_label":"App móvil cliente","domain_weight":"ventas","private":true,"language":"Dart","created_at":"2026-01-02T14:05:49Z","updated_at":"2026-09-03T21:48:29Z","pulls_total":100,"pulls_open":0,"pulls_merged":99,"commits_recent":30,"last_commit":"update","last_commit_date":"2026-09-03T21:48:17Z"},
+    {"repo":"voypati-tech/vpt_express","name":"vpt_express","domain":"express","domain_label":"Envíos / Billeteras de conductores / Contabilidad corporativa","domain_weight":"mensajería","private":true,"language":"Python","created_at":"2026-05-19T16:45:15Z","updated_at":"2026-09-03T19:13:19Z","pulls_total":100,"pulls_open":0,"pulls_merged":98,"commits_recent":30,"last_commit":"Merge pull request #285 from voypati-tech/dev","last_commit_date":"2026-09-03T19:13:09Z"},
+    {"repo":"voypati-tech/vpt_mercado","name":"vpt_mercado","domain":"mercado","domain_label":"Marketplace / Gastos / Caja","domain_weight":"órdenes","private":true,"language":"Python","created_at":"2026-05-23T16:17:52Z","updated_at":"2026-09-04T14:57:27Z","pulls_total":100,"pulls_open":0,"pulls_merged":100,"commits_recent":30,"last_commit":"fix api/v1/orders","last_commit_date":"2026-09-04T14:57:20Z"},
+    {"repo":"voypati-tech/vpt_metricas_kpi","name":"vpt_metricas_kpi","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"Python","created_at":"2026-05-19T16:58:55Z","updated_at":"2026-08-25T20:40:11Z","pulls_total":0,"pulls_open":0,"pulls_merged":0,"commits_recent":8,"last_commit":"fix: multiplicar cantidad de producto en combo por veces comprado el combo","last_commit_date":"2026-08-25T20:35:09Z"},
+    {"repo":"voypati-tech/vpt_panel_mercado","name":"vpt_panel_mercado","domain":"mercado","domain_label":"Marketplace / Gastos / Caja","domain_weight":"órdenes","private":true,"language":"TypeScript","created_at":"2026-05-19T16:56:17Z","updated_at":"2026-09-03T21:02:28Z","pulls_total":56,"pulls_open":0,"pulls_merged":55,"commits_recent":30,"last_commit":"Merge pull request #55 from voypati-tech/dev","last_commit_date":"2026-09-03T20:57:54Z"},
+    {"repo":"voypati-tech/vpt_panel_servicio","name":"vpt_panel_servicio","domain":"panel_servicio","domain_label":"Panel de servicio","domain_weight":"finanzas","private":true,"language":"TypeScript","created_at":"2026-05-19T16:48:12Z","updated_at":"2026-09-04T14:19:56Z","pulls_total":100,"pulls_open":0,"pulls_merged":98,"commits_recent":30,"last_commit":"Merge pull request #104 from voypati-tech/dev","last_commit_date":"2026-09-04T14:17:35Z"},
+    {"repo":"voypati-tech/vpt_proveedores","name":"vpt_proveedores","domain":"providers","domain_label":"Negocios / Órdenes / Finanzas por negocio","domain_weight":"órdenes","private":true,"language":"Python","created_at":"2026-06-03T13:42:57Z","updated_at":"2026-09-04T15:21:02Z","pulls_total":100,"pulls_open":0,"pulls_merged":100,"commits_recent":30,"last_commit":"feat(orders): send business_id to referral discount validation","last_commit_date":"2026-09-04T15:15:30Z"},
+    {"repo":"voypati-tech/vpt_tienda","name":"vpt_tienda","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"Dockerfile","created_at":"2026-05-19T16:57:19Z","updated_at":"2026-05-27T15:19:30Z","pulls_total":0,"pulls_open":0,"pulls_merged":0,"commits_recent":1,"last_commit":"Configurar CI/CD con github action y docker","last_commit_date":"2026-05-19T17:41:51Z"},
+    {"repo":"voypati-tech/vpt-core","name":"vpt-core","domain":"core","domain_label":"Núcleo / Referidos / IAM","domain_weight":"infraestructura","private":true,"language":"Python","created_at":"2026-07-14T15:43:47Z","updated_at":"2026-09-03T17:40:33Z","pulls_total":31,"pulls_open":0,"pulls_merged":30,"commits_recent":30,"last_commit":"Merge pull request #31 from voypati-tech/dev","last_commit_date":"2026-09-03T17:38:38Z"},
+    {"repo":"voypati-tech/vpt-infra","name":"vpt-infra","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":null,"created_at":"2026-05-19T15:12:24Z","updated_at":"2026-05-19T19:15:41Z","pulls_total":0,"pulls_open":0,"pulls_merged":0,"commits_recent":2,"last_commit":"Agregar workflow reutilizable para backend y frontend","last_commit_date":"2026-05-19T15:54:51Z"},
+    {"repo":"voypati-tech/vpt-monitoring","name":"vpt-monitoring","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":null,"created_at":"2026-08-13T20:15:46Z","updated_at":"2026-08-13T20:15:59Z","pulls_total":0,"pulls_open":0,"pulls_merged":0,"commits_recent":1,"last_commit":"Initial commit","last_commit_date":"2026-08-13T20:15:46Z"},
+    {"repo":"voypati-tech/vpt-realtime","name":"vpt-realtime","domain":"otros","domain_label":"Sin clasificar","domain_weight":"infraestructura","private":true,"language":"Python","created_at":"2026-07-07T14:56:53Z","updated_at":"2026-08-17T19:50:07Z","pulls_total":12,"pulls_open":0,"pulls_merged":12,"commits_recent":30,"last_commit":"fix(ci): forzar checkout de dev en el deploy de staging","last_commit_date":"2026-08-17T19:38:51Z"}
+  ]
+};
+function projectDomains() {
+  const byDomain = {};
+  for (const r of GITHUB_SNAPSHOT.repos.filter(x => !x.error)) {
+    byDomain[r.domain] = byDomain[r.domain] || { repos:0, prs:0, merged:0, commits:0, label:r.domain_label };
+    byDomain[r.domain].repos += 1;
+    byDomain[r.domain].prs += r.pulls_total;
+    byDomain[r.domain].merged += r.pulls_merged;
+    byDomain[r.domain].commits += r.commits_recent;
+  }
+  return Object.entries(byDomain).map(([domain,v]) => ({ domain, ...v })).sort((a,b) => b.merged - a.merged);
+}
+
+/* ============================================================
+   UI — helpers
+   ============================================================ */
+const ICONS = {
+  chev:'<path d="m6 9 6 6 6-6"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  play:'<polygon points="6 3 20 12 6 21 6 3"/>',
+  truck:'<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+  wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>',
+  receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+  copy:'<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+};
+function ic(name, size = 16, cls = '') { return `<svg class="ic ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`; }
+function toast(msg, kind = 'ok') {
+  const t = document.createElement('div');
+  t.className = `toast ${kind}`;
+  t.innerHTML = `<span style="color:${kind === 'ok' ? 'var(--green)' : 'var(--red)'}">${ic(kind === 'ok' ? 'check' : 'x', 16)}</span><span>${esc(msg)}</span>`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 320); }, 2600);
+}
+function accountOptions(selected) {
+  let html = '';
+  for (const type of Object.keys(GROUPS)) {
+    html += `<optgroup label="${GROUPS[type]}">`;
+    for (const [code, meta] of Object.entries(ACCOUNTS)) {
+      if (meta.type !== type) continue;
+      html += `<option value="${code}" ${code === selected ? 'selected' : ''}>${code} · ${meta.name}</option>`;
+    }
+    html += '</optgroup>';
+  }
+  return html;
+}
+function statusBadge(st) { const b = STATUS_BADGES[st] || STATUS_BADGES.pending; return `<span class="badge ${b.c}">${b.l}</span>`; }
+
+/* ============================================================
+   NAVEGACIÓN
+   ============================================================ */
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.toggle('active', el.id === name));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.toggle('active', el.dataset.tab === name));
+}
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('vp-demo-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+
+/* ============================================================
+   RENDER — PANEL
+   ============================================================ */
+let expandedEntries = new Set();
+let ordersQuery = '', journalQuery = '', ghQuery = '';
+
+function renderStats() {
+  const s = buildSummary();
+  const card = (label, value, sub, iconSvg, cls) => `
+    <div class="card stat">
+      <div class="stat-icon ${cls}">${iconSvg}</div>
+      <div>
+        <p class="stat-label">${label}</p>
+        <p class="stat-value">${value}</p>
+        ${sub ? `<p class="stat-sub">${sub}</p>` : ''}
+      </div>
+    </div>`;
+  const i = (d) => `<svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  document.getElementById('stat-row-1').innerHTML =
+    card('Ingresos totales', `${fmt(s.pl.revenue)} CUP`, `Ganancia bruta ${fmt(s.gross_profit)}`, i('<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>'), 'bg-green') +
+    card('Gastos totales', `${fmt(s.pl.expenses)} CUP`, `${s.pl.byExpense.length} categorías`, i('<path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/>'), 'bg-red') +
+    card('Ganancia Neta', `${fmt(s.pl.net_income)} CUP`, `Margen ${fmt(s.pl.margin)} %`, i('<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/>'), 'bg-orange') +
+    card('Asientos publicados', String(state.ledger.entries.length), 'Debe = Haber', i('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'), 'bg-blue');
+  document.getElementById('stat-row-2').innerHTML =
+    card('Volumen vendido (GMV)', `${fmt(s.gmv)} CUP`, `${s.processed} órdenes completadas`, i('<path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>'), 'bg-orange') +
+    card('Órdenes procesadas', `${s.processed} / ${s.orders_total}`, `${s.cancelled} canceladas`, i('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'), 'bg-blue') +
+    card('ROI', `${fmt(s.roi)} %`, `sobre inversión ${fmt(s.investment)}`, i('<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>'), 'bg-purple') +
+    card('Caja de cierre (CUP)', `${fmt(s.wallet_tot.closing_cup)} CUP`, `USD a ${state.usd_to_cup}`, i('<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>'), 'bg-teal') +
+    card('Facturas emitidas', String(s.invoices_count), `Total ${fmt(s.invoices_total)} CUP`, i('<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>'), 'bg-yellow');
+  const tb = s.tb;
+  document.getElementById('dash-banner').innerHTML =
+    `<div class="banner ${tb.balanced ? 'banner-ok' : 'banner-err'}">${ic(tb.balanced ? 'check' : 'x', 18)} Trial balance: Debe ${fmt(tb.totalDebit)} = Haber ${fmt(tb.totalCredit)} — ${tb.balanced ? 'CUADRA' : 'NO CUADRA'}</div>`;
+  document.getElementById('entry-count-pill').textContent = `${state.ledger.entries.length} asientos`;
+  document.getElementById('balance-pill').innerHTML = tb.balanced ? '✔ Cuadra' : '✘ No cuadra';
+}
+function renderDashPL() {
+  const pl = incomeStatement();
+  const max = Math.max(pl.revenue, pl.expenses, 1);
+  const bar = (label, amt, color, pct) => `
+    <div class="bar-row">
+      <span class="lbl">${label}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <span class="amt">${fmt(amt)} CUP</span>
+    </div>`;
+  let h = bar('Ingresos', pl.revenue, 'var(--green)', (pl.revenue / max) * 100);
+  h += bar('Gastos', pl.expenses, 'var(--red)', (pl.expenses / max) * 100);
+  h += `<div class="divider"></div>`;
+  h += `<div class="kv"><div class="kv-item"><div class="k">Resultado neto</div><div class="v ${pl.net_income >= 0 ? 'text-green' : 'text-red'}">${fmt(pl.net_income)} CUP</div></div>
+        <div class="kv-item"><div class="k">Margen neto</div><div class="v text-primary">${fmt(pl.margin)} %</div></div></div>`;
+  document.getElementById('dash-pl').innerHTML = h;
+}
+function renderDashRecent() {
+  const entries = state.ledger.entries.slice(-6).reverse();
+  if (!entries.length) { document.getElementById('dash-recent').innerHTML = '<div class="empty">Sin asientos aún.</div>'; return; }
+  document.getElementById('dash-recent').innerHTML = `
+    <div class="table-wrap" style="max-height:none">
+      <table class="table"><thead><tr><th>Hora</th><th>Ref</th><th>Descripción</th><th class="ta-r">Total</th></tr></thead><tbody>
+      ${entries.map(e => `<tr><td class="mono">${fmtDT(e.date)}</td><td class="mono fw6">${esc(e.ref)}</td><td>${esc(e.description)}</td><td class="ta-r mono">${fmt(e.total)}</td></tr>`).join('')}
+      </tbody></table>
+    </div>`;
+}
+function renderDashWallet() {
+  const w = buildWalletMovements({ cup:15000, usd:200 });
+  const rec = reconcile(w);
+  document.getElementById('dash-wallet').innerHTML = `
+    <div class="kv">
+      <div class="kv-item"><div class="k">Cierre CUP</div><div class="v">${fmt(w.closing.cup)}</div></div>
+      <div class="kv-item"><div class="k">Cierre USD</div><div class="v">${fmt(w.closing.usd)}</div></div>
+      <div class="kv-item"><div class="k">Movimientos</div><div class="v">${w.total_movements}</div></div>
+      <div class="kv-item"><div class="k">Conciliación</div><div class="v ${rec.cup.reconciled && rec.usd.reconciled ? 'text-green' : 'text-red'}">${rec.cup.reconciled && rec.usd.reconciled ? '✔ cuadra' : '✘ difiere'}</div></div>
+    </div>`;
+}
+function renderDashGithub() {
+  const doms = projectDomains();
+  document.getElementById('dash-github').innerHTML = `
+    <div class="kv">
+      ${doms.slice(0, 5).map(d => `<div class="kv-item"><div class="k">${esc(d.domain)}</div><div class="v">${d.merged} PRs</div><div class="small text-muted">${d.repos} repos · ${d.commits} commits</div></div>`).join('')}
+    </div>`;
+}
+
+/* ============================================================
+   RENDER — ÓRDENES
+   ============================================================ */
+function renderOrdersTable() {
+  const el = document.getElementById('orders-table');
+  const countEl = document.getElementById('orders-count');
+  const q = ordersQuery.toLowerCase();
+  let orders = state.orders.slice().reverse();
+  if (q) orders = orders.filter(o => o.number.toLowerCase().includes(q) || o.items.some(it => it.name.toLowerCase().includes(q)));
+  countEl.textContent = `${state.orders.length} órdenes`;
+  if (!orders.length) { el.innerHTML = '<div class="empty">Sin órdenes. Crea una o ejecuta el día contable.</div>'; return; }
+  let html = '<div class="table-wrap"><table class="table"><thead><tr><th>Orden</th><th>Fecha</th><th>Productos</th><th class="ta-r">Total</th><th>Pago</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+  for (const o of orders) {
+    const items = o.items.map(it => `${it.name} ×${it.quantity}`).join(', ');
+    const actions = orderActions(o);
+    html += `<tr class="clickable" onclick="toggleOrder('${o.id}')">
+      <td class="mono fw6">${o.number}</td>
+      <td class="mono small">${fmtDT(o.created_at)}</td>
+      <td class="small">${esc(items)}${o.coupon ? ` <span class="badge badge-orange">${esc(o.coupon.code)} −${o.coupon.discount_percentage}%</span>` : ''}</td>
+      <td class="ta-r mono fw6">${fmt(o.total_price)}</td>
+      <td class="small">${esc(PAY_LABELS[o.payment_method] || o.payment_method)}${o.is_paid ? ' <span class="badge badge-green">pagada</span>' : ''}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td><div class="order-actions">${actions}</div></td>
+    </tr>`;
+    if (expandedOrders.has(o.id)) {
+      html += `<tr class="detail-row"><td colspan="7"><div class="flex" style="gap:1.5rem;flex-wrap:wrap">
+        <div style="flex:1;min-width:260px"><div class="section-label">Financiero</div>
+          <div class="kv" style="grid-template-columns:1fr 1fr">
+            <div class="kv-item"><div class="k">Subtotal</div><div class="v">${fmt(o.subtotal)}</div></div>
+            <div class="kv-item"><div class="k">Descuento</div><div class="v text-red">${fmt(o.discount)}</div></div>
+            <div class="kv-item"><div class="k">Envío</div><div class="v">${fmt(o.shipping_price)}</div></div>
+            <div class="kv-item"><div class="k">Total</div><div class="v text-primary">${fmt(o.total_price)}</div></div>
+            <div class="kv-item"><div class="k">Comisión 10%</div><div class="v">${fmt(o.client_commission)}</div></div>
+            <div class="kv-item"><div class="k">Mensajero (80%)</div><div class="v">${fmt(o.messenger_profit)}</div></div>
+            <div class="kv-item"><div class="k">Inversión</div><div class="v">${fmt(o.investment)}</div></div>
+            <div class="kv-item"><div class="k">Ingreso esperado</div><div class="v">${fmt(o.expected_income)}</div></div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:260px"><div class="section-label">Ciclo de vida</div><div class="timeline">${timeline(o)}</div></div>
+      </div></td></tr>`;
+    }
+  }
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+const expandedOrders = new Set();
+function toggleOrder(id) {
+  if (expandedOrders.has(id)) expandedOrders.delete(id); else expandedOrders.add(id);
+  renderOrdersTable();
+}
+function orderActions(o) {
+  if (o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected') return '<span class="small text-muted">—</span>';
+  let h = '';
+  if (!o.is_paid) h += `<button class="btn btn-soft-green btn-sm" onclick="event.stopPropagation();doMarkPaid('${o.id}')">${ic('check', 13)} Pagar</button>`;
+  if (o.status === 'pending') h += `<button class="btn btn-soft-orange btn-sm" onclick="event.stopPropagation();doAdvance('${o.id}')">Aceptar →</button>`;
+  else if (o.status !== 'delivering') h += `<button class="btn btn-soft-blue btn-sm" onclick="event.stopPropagation();doAdvance('${o.id}')">Avanzar →</button>`;
+  else h += `<button class="btn btn-soft-green btn-sm" onclick="event.stopPropagation();doAdvance('${o.id}')">${ic('check', 13)} Completar</button>`;
+  h += `<button class="btn btn-soft-red btn-sm" onclick="event.stopPropagation();doCancel('${o.id}')">Cancelar</button>`;
+  return h;
+}
+function timeline(o) {
+  let h = '';
+  const idx = STATUS_ORDER.indexOf(o.status);
+  STATUS_ORDER.forEach((st, i) => {
+    const cls = i < idx ? 'done' : (i === idx && st !== 'completed' ? 'cur' : 'todo');
+    h += `<div class="tl-step"><span class="tl-dot ${cls}"></span><div class="flex-between" style="flex:1"><span class="small">${STATUS_BADGES[st].l}</span><span class="small text-muted mono">${i <= idx ? fmtDT(o.events.find(e => e.status === st)?.at) : ''}</span></div></div>`;
+    if (i < STATUS_ORDER.length - 1) h += `<div class="tl-line" style="margin-left:4px;margin-bottom:.4rem"></div>`;
+  });
+  return h;
+}
+function doMarkPaid(id) {
+  const o = state.orders.find(x => x.id === id); if (!o) return;
+  markPaidOrder(o);
+  toast(`Orden ${o.number} marcada como pagada`);
+  renderOrdersTable(); renderStats(); renderJournal();
+}
+function doAdvance(id) {
+  const o = state.orders.find(x => x.id === id); if (!o) return;
+  const from = o.status;
+  advanceOrder(o);
+  if (o.status === 'completed') {
+    toast(`Orden ${o.number} COMPLETADA · se publicaron los asientos (venta, COGS, comisión, cobro, mensajero)`);
+    renderAll();
+  } else {
+    toast(`Orden ${o.number}: ${STATUS_BADGES[from].l} → ${STATUS_BADGES[o.status].l}`);
+    renderOrdersTable(); renderStats();
+  }
+}
+function doCancel(id) {
+  const o = state.orders.find(x => x.id === id); if (!o) return;
+  cancelOrder(o);
+  toast(o.is_paid ? `Orden ${o.number} cancelada · se registró reembolso` : `Orden ${o.number} cancelada (sin venta ni comisión)`, o.is_paid ? 'ok' : 'ok');
+  renderAll();
+}
+function fillProductSelect() {
+  document.getElementById('ord-product').innerHTML = PRODUCTS.map((p, i) => `<option value="${i}">${p.name} — ${p.price} CUP</option>`).join('');
+}
+function previewOrder() {
+  const p = PRODUCTS[+document.getElementById('ord-product').value];
+  const qty = +document.getElementById('ord-qty').value;
+  const ship = +document.getElementById('ord-ship').value;
+  const coupon = COUPONS.find(c => c.code === document.getElementById('ord-coupon').value) || null;
+  const subtotal = round2(p.price * qty);
+  const discount = coupon ? round2(subtotal * coupon.discount_percentage / 100) : 0;
+  const total = round2(subtotal - discount + ship);
+  const comm = round2(total * 0.1);
+  document.getElementById('order-preview').innerHTML = `
+    <div class="banner banner-ok" style="background:var(--muted-bg);color:var(--fg);border-color:var(--border)">Subtotal ${fmt(subtotal)} − desc ${fmt(discount)} + envío ${fmt(ship)} = <b>${fmt(total)} CUP</b> · Comisión 10%: <b>${fmt(comm)} CUP</b> · Mensajero: ${fmt(round2(ship * 0.8))} CUP</div>`;
+}
+function createOrderFromForm() {
+  const p = PRODUCTS[+document.getElementById('ord-product').value];
+  const qty = +document.getElementById('ord-qty').value;
+  const ship = +document.getElementById('ord-ship').value;
+  const coupon = COUPONS.find(c => c.code === document.getElementById('ord-coupon').value) || null;
+  const pay = document.getElementById('ord-pay').value;
+  const auto = document.getElementById('ord-auto').checked;
+  const order = createOrder({ items:[{ name:p.name, price:p.price, cost:p.cost, quantity:qty }], shipping_price:ship, coupon, payment_method:pay });
+  if (auto) {
+    markPaidOrder(order);
+    for (const st of ["accepted","processing","ready","delivering"]) { order.status = st; order.events.push({ at:new Date().toISOString(), status:st, note:"" }); }
+    order.status = "completed";
+    order.events.push({ at:new Date().toISOString(), status:"completed", note:"Entregada" });
+    processOrder(order, { date:new Date().toISOString(), collection_pct:0.6 });
+    toast(`Orden ${order.number} creada y completada · total ${fmt(order.total_price)} CUP · asientos publicados`);
+  } else {
+    toast(`Orden ${order.number} creada en estado pendiente · avanza el ciclo con los botones`);
+  }
+  document.getElementById('order-preview').innerHTML = '';
+  renderAll();
+}
+
+/* ============================================================
+   RENDER — LIBRO DIARIO
+   ============================================================ */
+let entryLines = [{ account:'1001', debit:'', credit:'' }];
+function addEntryLine() { entryLines.push({ account:'1001', debit:'', credit:'' }); renderEntryForm(); }
+function removeEntryLine(i) { entryLines.splice(i, 1); if (!entryLines.length) entryLines = [{ account:'1001', debit:'', credit:'' }]; renderEntryForm(); }
+function renderEntryForm() {
+  const el = document.getElementById('entry-lines');
+  let h = '<div class="table-wrap" style="max-height:none"><table class="table"><thead><tr><th style="width:34%">Cuenta</th><th>Debe</th><th>Haber</th><th style="width:44px"></th></tr></thead><tbody>';
+  entryLines.forEach((l, i) => {
+    h += `<tr>
+      <td><select class="select" onchange="entryLines[${i}].account=this.value">${accountOptions(l.account)}</select></td>
+      <td><input class="input mono" type="number" min="0" step="0.01" placeholder="0.00" value="${l.debit}" oninput="entryLines[${i}].debit=this.value"></td>
+      <td><input class="input mono" type="number" min="0" step="0.01" placeholder="0.00" value="${l.credit}" oninput="entryLines[${i}].credit=this.value"></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="removeEntryLine(${i})">${ic('x', 14)}</button></td>
+    </tr>`;
+  });
+  h += '</tbody></table></div>';
+  el.innerHTML = h;
+  let d = 0, c = 0;
+  for (const l of entryLines) { d += parseFloat(l.debit) || 0; c += parseFloat(l.credit) || 0; }
+  document.getElementById('entry-totals').innerHTML =
+    `<span class="pill">Debe ${fmt(d)}</span><span class="pill">Haber ${fmt(c)}</span>` +
+    (Math.abs(d - c) < 0.001 && (d > 0 || c > 0) ? `<span class="badge badge-green">cuadra</span>` : `<span class="badge ${d > 0 || c > 0 ? 'badge-red' : 'badge-muted'}">${d > 0 || c > 0 ? 'no cuadra' : 'vacío'}</span>`);
+}
+function submitEntry() {
+  const ref = document.getElementById('entry-ref').value.trim() || 'MANUAL';
+  const desc = document.getElementById('entry-desc').value.trim();
+  if (!desc) return toast('Escribe una descripción para el asiento', 'err');
+  const lines = [];
+  let has = false;
+  for (const l of entryLines) {
+    const d = parseFloat(l.debit) || 0, c = parseFloat(l.credit) || 0;
+    if (!l.account) continue;
+    if (d > 0) { lines.push({ account:l.account, debit:d }); has = true; }
+    if (c > 0) { lines.push({ account:l.account, credit:c }); has = true; }
+  }
+  if (!has) return toast('Agrega al menos un débito o un crédito', 'err');
+  try {
+    const e = postEntry({ date:new Date().toISOString(), ref, description:desc, lines });
+    toast(`Asiento publicado · Debe = Haber = ${fmt(e.total)} CUP`);
+    entryLines = [{ account:'1001', debit:'', credit:'' }];
+    document.getElementById('entry-ref').value = 'MANUAL';
+    document.getElementById('entry-desc').value = '';
+    renderEntryForm(); renderAll();
+  } catch (err) { toast(err.message, 'err'); }
+}
+function renderJournal() {
+  const el = document.getElementById('journal-table');
+  const count = document.getElementById('journal-count');
+  const q = journalQuery.toLowerCase();
+  let entries = state.ledger.entries.slice().reverse();
+  if (q) entries = entries.filter(e => e.ref.toLowerCase().includes(q) || e.description.toLowerCase().includes(q) || e.lines.some(l => (l.account + ' ' + (ACCOUNTS[l.account]?.name || '')).toLowerCase().includes(q)));
+  count.textContent = `${entries.length} de ${state.ledger.entries.length} asientos`;
+  if (!entries.length) { el.innerHTML = '<div class="empty">Sin asientos que coincidan.</div>'; return; }
+  let h = '<table class="table"><thead><tr><th>Fecha</th><th>Ref</th><th>Descripción</th><th class="ta-r">Total</th><th></th></tr></thead><tbody>';
+  for (const e of entries) {
+    const open = expandedEntries.has(e.id);
+    h += `<tr class="clickable" onclick="toggleEntry('${e.id}')">
+      <td class="mono small">${fmtDT(e.date)}</td>
+      <td class="mono fw6">${esc(e.ref)}</td>
+      <td>${esc(e.description)}</td>
+      <td class="ta-r mono fw6">${fmt(e.total)}</td>
+      <td class="ta-c text-muted">${ic('chev', 14)}</td></tr>`;
+    if (open) {
+      h += `<tr class="detail-row"><td colspan="5">
+        <div class="table-wrap" style="max-height:none"><table class="sub-table">
+          <thead><tr><th>Código</th><th>Cuenta</th><th class="ta-r">Debe</th><th class="ta-r">Haber</th></tr></thead><tbody>`;
+      for (const l of e.lines) {
+        h += `<tr><td class="mono">${l.account}</td><td>${esc(ACCOUNTS[l.account]?.name || l.account)} <span class="text-muted small">${esc(ACCOUNTS[l.account]?.detail || '')}</span></td>
+          <td class="ta-r mono">${l.debit ? fmt(l.debit) : ''}</td><td class="ta-r mono">${l.credit ? fmt(l.credit) : ''}</td></tr>`;
+      }
+      h += `<tr class="sum-row"><td colspan="2">TOTAL</td><td class="ta-r mono">${fmt(e.total)}</td><td class="ta-r mono">${fmt(e.total)}</td></tr>`;
+      h += '</tbody></table></div></td></tr>';
+    }
+  }
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+function toggleEntry(id) {
+  if (expandedEntries.has(id)) expandedEntries.delete(id); else expandedEntries.add(id);
+  renderJournal();
+}
+
+/* ============================================================
+   RENDER — TRIAL BALANCE / P&L / BALANCE
+   ============================================================ */
+function renderTrialBalance() {
+  const tb = trialBalance();
+  document.getElementById('tb-banner').innerHTML =
+    `<div class="banner ${tb.balanced ? 'banner-ok' : 'banner-err'}">${ic(tb.balanced ? 'check' : 'x', 18)} Debe ${fmt(tb.totalDebit)} = Haber ${fmt(tb.totalCredit)} — ${tb.balanced ? 'CUADRA' : 'NO CUADRA'}</div>`;
+  const bal = Object.values(tb.balances).sort((a, b) => a.code < b.code ? -1 : 1);
+  let h = '<div class="table-wrap" style="max-height:none"><table class="table"><thead><tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th class="ta-r">Debe</th><th class="ta-r">Haber</th><th class="ta-r">Saldo natural</th><th>Naturaleza</th></tr></thead><tbody>';
+  for (const b of bal) {
+    const nat = b.type === 'asset' || b.type === 'expense' ? 'deudora' : 'acreedora';
+    h += `<tr><td class="mono fw6">${b.code}</td><td>${esc(b.name)}</td><td><span class="badge badge-muted">${TYPE_LABEL[b.type]}</span></td>
+      <td class="ta-r mono">${fmt(b.debit)}</td><td class="ta-r mono">${fmt(b.credit)}</td>
+      <td class="ta-r mono fw6">${fmt(b.natural_balance)}</td><td class="small">${nat}</td></tr>`;
+  }
+  h += `<tr class="total-row"><td colspan="3">TOTALES</td><td class="ta-r mono">${fmt(tb.totalDebit)}</td><td class="ta-r mono">${fmt(tb.totalCredit)}</td><td></td><td>${tb.balanced ? '<span class="badge badge-green">✔ cuadra</span>' : '<span class="badge badge-red">✘ no cuadra</span>'}</td></tr>`;
+  h += '</tbody></table></div>';
+  document.getElementById('tb-table').innerHTML = h;
+}
+function renderCatalog() {
+  let h = '<div class="table-wrap" style="max-height:none"><table class="table"><thead><tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th>Fuente / detalle real</th></tr></thead><tbody>';
+  for (const type of Object.keys(GROUPS)) {
+    h += `<tr class="total-row"><td colspan="4">${GROUPS[type]}</td></tr>`;
+    for (const [code, meta] of Object.entries(ACCOUNTS)) {
+      if (meta.type !== type) continue;
+      h += `<tr><td class="mono fw6">${code}</td><td>${esc(meta.name)}</td><td><span class="badge badge-muted">${TYPE_LABEL[meta.type]}</span></td><td class="small text-muted">${esc(meta.detail)}</td></tr>`;
+    }
+  }
+  h += '</tbody></table></div>';
+  document.getElementById('catalog').innerHTML = h;
+}
+function renderPL() {
+  const pl = incomeStatement();
+  const card = (l, v, cls, svg) => `<div class="card stat"><div class="stat-icon ${cls}">${svg}</div><div><p class="stat-label">${l}</p><p class="stat-value">${v}</p></div></div>`;
+  document.getElementById('pl-cards').innerHTML =
+    card('Ingresos', `${fmt(pl.revenue)} CUP`, 'bg-green', '<svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg>') +
+    card('Gastos', `${fmt(pl.expenses)} CUP`, 'bg-red', '<svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/></svg>') +
+    card('Resultado neto', `${fmt(pl.net_income)} CUP`, pl.net_income >= 0 ? 'bg-orange' : 'bg-red', '<svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>') +
+    card('Margen neto', `${fmt(pl.margin)} %`, 'bg-purple', '<svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>');
+  const max = Math.max(pl.revenue, pl.expenses, 1);
+  const row = (l, amt, color) => `<div class="bar-row"><span class="lbl">${l}</span><div class="bar-track"><div class="bar-fill" style="width:${(amt / max) * 100}%;background:${color}"></div></div><span class="amt">${fmt(amt)} CUP</span></div>`;
+  document.getElementById('pl-revenue').innerHTML = pl.byRevenue.length
+    ? pl.byRevenue.map(r => row(r.name, r.natural_balance, 'var(--green)')).join('')
+    : '<div class="empty">Sin ingresos.</div>';
+  document.getElementById('pl-expense').innerHTML = pl.byExpense.length
+    ? pl.byExpense.map(r => row(r.name, r.natural_balance, 'var(--red)')).join('')
+    : '<div class="empty">Sin gastos.</div>';
+}
+function renderBalanceSheet() {
+  const bs = balanceSheet();
+  document.getElementById('bs-banner').innerHTML =
+    `<div class="banner ${bs.balanced ? 'banner-ok' : 'banner-err'}">${ic(bs.balanced ? 'check' : 'x', 18)} Activos ${fmt(bs.assets)} = Pasivos ${fmt(bs.liabilities)} + Patrimonio ${fmt(bs.equity)} — ${bs.balanced ? 'ECUACIÓN CUADRA' : 'NO CUADRA'}</div>`;
+  document.getElementById('bs-cards').innerHTML = `
+    <div class="card stat"><div class="stat-icon bg-blue"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></div><div><p class="stat-label">Activos</p><p class="stat-value">${fmt(bs.assets)}</p></div></div>
+    <div class="card stat"><div class="stat-icon bg-yellow"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M4 20V8l6 4V8l6 4V8l4 3v9"/></svg></div><div><p class="stat-label">Pasivos</p><p class="stat-value">${fmt(bs.liabilities)}</p></div></div>
+    <div class="card stat"><div class="stat-icon bg-purple"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg></div><div><p class="stat-label">Patrimonio (incl. resultado)</p><p class="stat-value">${fmt(bs.equity)}</p></div></div>
+    <div class="card stat"><div class="stat-icon bg-green"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg></div><div><p class="stat-label">Resultado del día</p><p class="stat-value">${fmt(bs.net_income)}</p></div></div>`;
+  const bal = accountBalances();
+  let h = '<div class="table-wrap" style="max-height:none"><table class="table"><thead><tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th class="ta-r">Saldo natural</th></tr></thead><tbody>';
+  for (const type of ['asset', 'liability', 'equity']) {
+    const rows = Object.values(bal).filter(b => b.type === type).sort((a, b) => a.code < b.code ? -1 : 1);
+    h += `<tr class="total-row"><td colspan="4">${GROUPS[type]} — subtotal ${fmt(rows.reduce((a, b) => a + b.natural_balance, 0))}</td></tr>`;
+    for (const b of rows) h += `<tr><td class="mono fw6">${b.code}</td><td>${esc(b.name)}</td><td><span class="badge badge-muted">${TYPE_LABEL[b.type]}</span></td><td class="ta-r mono">${fmt(b.natural_balance)}</td></tr>`;
+  }
+  h += `</tbody></table></div>`;
+  document.getElementById('bs-detail').innerHTML = h;
+}
+
+/* ============================================================
+   RENDER — BILLETERA
+   ============================================================ */
+function renderWallet() {
+  const w = buildWalletMovements({ cup:15000, usd:200 });
+  const rec = reconcile(w);
+  const tot = walletTotalsCup(w);
+  document.getElementById('wallet-cards').innerHTML = `
+    <div class="card stat"><div class="stat-icon bg-blue"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div><div><p class="stat-label">Cierre CUP</p><p class="stat-value">${fmt(w.closing.cup)}</p><p class="stat-sub">apertura ${fmt(w.opening.cup)}</p></div></div>
+    <div class="card stat"><div class="stat-icon bg-teal"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><p class="stat-label">Cierre USD</p><p class="stat-value">${fmt(w.closing.usd)}</p><p class="stat-sub">apertura ${fmt(w.opening.usd)}</p></div></div>
+    <div class="card stat"><div class="stat-icon bg-green"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg></div><div><p class="stat-label">Entradas (CUP+USD)</p><p class="stat-value">${fmt(w.total_in.cup)} / ${fmt(w.total_in.usd)}</p></div></div>
+    <div class="card stat"><div class="stat-icon bg-red"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/></svg></div><div><p class="stat-label">Salidas (CUP+USD)</p><p class="stat-value">${fmt(w.total_out.cup)} / ${fmt(w.total_out.usd)}</p></div></div>
+    <div class="card stat"><div class="stat-icon bg-orange"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><p class="stat-label">Cierre en CUP (equiv.)</p><p class="stat-value">${fmt(tot.closing_cup)}</p><p class="stat-sub">USD a ${state.usd_to_cup} CUP</p></div></div>`;
+  const recCard = (r) => `<div class="kv-item"><div class="k">Conciliación ${r.currency}</div>
+    <div class="v ${r.reconciled ? 'text-green' : 'text-red'}">${r.reconciled ? '✔ cuadra' : '✘ difiere'}</div>
+    <div class="small text-muted">esperado ${fmt(r.expected)} · real ${fmt(r.actual)} · dif ${fmt(r.difference)}</div></div>`;
+  document.getElementById('reconcile').innerHTML = recCard(rec.cup) + recCard(rec.usd);
+  document.getElementById('wallet-cup-count').textContent = `${w.movements.cup.length} movimientos`;
+  document.getElementById('wallet-usd-count').textContent = `${w.movements.usd.length} movimientos`;
+  const movTable = (arr, cur) => {
+    if (!arr.length) return '<div class="empty">Sin movimientos.</div>';
+    let h = '<table class="table"><thead><tr><th>Fecha</th><th>Ref</th><th>Descripción</th><th class="ta-r">Monto</th><th class="ta-r">Saldo después</th></tr></thead><tbody>';
+    for (const m of arr.slice().reverse()) {
+      h += `<tr><td class="mono small">${fmtDT(m.date)}</td><td class="mono small fw6">${esc(m.ref)}</td><td class="small">${esc(m.description)}</td>
+        <td class="ta-r mono ${m.kind === 'in' ? 'text-green' : 'text-red'}">${m.kind === 'in' ? '+' : '−'}${fmt(m.amount)}</td>
+        <td class="ta-r mono fw6">${fmt(m.balance_after)}</td></tr>`;
+    }
+    h += '</tbody></table>';
+    return h;
+  };
+  document.getElementById('wallet-cup').innerHTML = movTable(w.movements.cup, 'CUP');
+  document.getElementById('wallet-usd').innerHTML = movTable(w.movements.usd, 'USD');
+}
+
+/* ============================================================
+   RENDER — DOCUMENTOS
+   ============================================================ */
+let opType = 'invoice';
+function renderOpFields() {
+  const el = document.getElementById('op-extra');
+  const label = document.getElementById('op-amount-label');
+  const amount = document.getElementById('op-amount');
+  if (opType === 'invoice') { label.textContent = 'Comisión base (CUP)'; amount.value = '250';
+    el.innerHTML = `<div class="form-grid" style="grid-column:1/-1"><div class="field"><label>Negocio</label><input class="input" id="op-business" placeholder="Nombre del negocio..."></div>
+    <div class="field"><label>IVA / ITBMS (%)</label><input class="input" id="op-tax" type="number" min="0" step="0.1" value="5"></div></div>`;
+  } else if (opType === 'withdrawal') { label.textContent = 'Monto'; amount.value = '200';
+    el.innerHTML = `<div class="form-grid" style="grid-column:1/-1"><div class="field"><label>Moneda</label><select class="select" id="op-cur"><option value="CUP">CUP</option><option value="USD">USD</option></select></div>
+    <div class="field"><label>Método de pago</label><select class="select" id="op-method"><option value="transfer">Transferencia</option><option value="bank">Banco</option><option value="cash">Efectivo</option></select></div></div>`;
+  } else if (opType === 'payroll') { label.textContent = 'Nómina (CUP)'; amount.value = '900';
+    el.innerHTML = `<div class="field"><label>% pagado (0–1)</label><input class="input" id="op-paid" type="number" min="0" max="1" step="0.1" value="1"></div>`;
+  } else if (opType === 'tax') { label.textContent = 'Impuesto (CUP)'; amount.value = '85';
+    el.innerHTML = `<div class="field"><label>% pagado (0–1)</label><input class="input" id="op-paid" type="number" min="0" max="1" step="0.1" value="0.5"></div>`;
+  } else if (opType === 'coupon') { label.textContent = 'Subsidio (CUP)'; amount.value = '100'; el.innerHTML = ''; }
+  else if (opType === 'promoter') { label.textContent = 'Comisión (CUP)'; amount.value = '50';
+    el.innerHTML = `<div class="field"><label>Nota</label><input class="input" id="op-note" placeholder="Referencia del promotor..."></div>`;
+  } else if (opType === 'opex') { label.textContent = 'Monto (CUP)'; amount.value = '120';
+    el.innerHTML = `<div class="field"><label>Concepto</label><input class="input" id="op-concept" placeholder="Alquiler local, servicios..."></div>`;
+  }
+}
+function submitOperation() {
+  const amount = parseFloat(document.getElementById('op-amount').value) || 0;
+  const now = new Date().toISOString();
+  const val = id => document.getElementById(id)?.value;
+  try {
+    if (opType === 'invoice') {
+      const business = val('op-business').trim() || 'Negocio demo';
+      const tax = parseFloat(val('op-tax')) || 0;
+      const inv = issueInvoice({ date:now, business, commission_subtotal:amount, tax_percentage:tax });
+      toast(`Factura ${inv.number} emitida · total ${fmt(inv.total)} CUP`);
+    } else if (opType === 'withdrawal') {
+      const wd = processWithdrawal({ date:now, amount, currency:val('op-cur'), payment_method:val('op-method') });
+      toast(`Retiro del socio ${fmt(amount)} ${wd.currency} registrado`);
+    } else if (opType === 'payroll') {
+      registerPayroll({ date:now, amount, paid_pct:parseFloat(val('op-paid')) || 1 });
+      toast(`Nómina de ${fmt(amount)} CUP registrada`);
+    } else if (opType === 'tax') {
+      registerTax({ date:now, amount, paid_pct:parseFloat(val('op-paid')) ?? 0.5 });
+      toast(`Impuesto de ${fmt(amount)} CUP registrado`);
+    } else if (opType === 'coupon') {
+      registerCoupon({ date:now, amount });
+      toast(`Subsidio de cupón ${fmt(amount)} CUP registrado`);
+    } else if (opType === 'promoter') {
+      registerPromoter({ date:now, amount, note:val('op-note') });
+      toast(`Comisión de promotor ${fmt(amount)} CUP registrada`);
+    } else if (opType === 'opex') {
+      registerOperating({ date:now, amount, concept:val('op-concept') || 'Gasto operativo' });
+      toast(`Gasto operativo ${fmt(amount)} CUP registrado`);
+    }
+    renderAll();
+  } catch (err) { toast(err.message, 'err'); }
+}
+function renderDocs() {
+  document.getElementById('inv-count').textContent = `${state.invoices.length} facturas`;
+  document.getElementById('wd-count').textContent = `${state.withdrawals.length} retiros`;
+  document.getElementById('op-count').textContent = `${state.operations.length} operaciones`;
+  const invEl = document.getElementById('invoices-table');
+  invEl.innerHTML = state.invoices.length ? `
+    <table class="table"><thead><tr><th>Número</th><th>Negocio</th><th class="ta-r">Subtotal</th><th class="ta-r">IVA</th><th class="ta-r">Total</th></tr></thead><tbody>
+    ${state.invoices.map(i => `<tr><td class="mono fw6">${i.number}</td><td class="small">${esc(i.business)}</td><td class="ta-r mono">${fmt(i.subtotal)}</td><td class="ta-r mono">${fmt(i.tax_amount)}</td><td class="ta-r mono fw6">${fmt(i.total)}</td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">Sin facturas.</div>';
+  const wdEl = document.getElementById('withdrawals-table');
+  wdEl.innerHTML = state.withdrawals.length ? `
+    <table class="table"><thead><tr><th>Fecha</th><th class="ta-r">Monto</th><th>Moneda</th><th>Método</th><th>Estado</th></tr></thead><tbody>
+    ${state.withdrawals.map(w => `<tr><td class="mono small">${fmtDT(w.date)}</td><td class="ta-r mono fw6">${fmt(w.amount)}</td><td class="mono">${w.currency}</td><td class="small">${esc(w.payment_method)}</td><td><span class="badge badge-green">Completado</span></td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">Sin retiros.</div>';
+  const opEl = document.getElementById('operations-table');
+  opEl.innerHTML = state.operations.length ? `
+    <table class="table"><thead><tr><th>Fecha</th><th>Ref</th><th>Operación</th><th>Detalle</th><th class="ta-r">Monto (CUP)</th></tr></thead><tbody>
+    ${state.operations.map(o => `<tr><td class="mono small">${fmtDT(o.date)}</td><td class="mono small fw6">${esc(o.ref)}</td><td class="small fw6">${esc(o.label)}</td><td class="small text-muted">${esc(o.extra || '')}</td><td class="ta-r mono fw6">${fmt(o.amount)}</td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">Sin operaciones.</div>';
+}
+
+/* ============================================================
+   RENDER — GITHUB
+   ============================================================ */
+function renderGitHub() {
+  const doms = projectDomains();
+  document.getElementById('gh-count').textContent = `${GITHUB_SNAPSHOT.repo_count} repos`;
+  const colors = ['bg-blue','bg-green','bg-purple','bg-orange','bg-teal','bg-yellow','bg-red'];
+  const domCard = (d, i) => `<div class="card stat"><div class="stat-icon ${colors[i % colors.length]}"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></div><div><p class="stat-label">${esc(d.label)}</p><p class="stat-value">${d.merged} PRs</p><p class="stat-sub">${d.repos} repos · ${d.prs} PRs · ${d.commits} commits</p></div></div>`;
+  document.getElementById('gh-domains').innerHTML = doms.map(domCard).join('');
+  document.getElementById('gh-statuses').innerHTML = ['pending','accepted','processing','ready','delivering','completed','cancelled','rejected']
+    .map(s => `<span class="badge ${STATUS_BADGES[s].c} badge-lg">${STATUS_BADGES[s].l}</span>`).join('');
+  const q = ghQuery.toLowerCase();
+  let repos = GITHUB_SNAPSHOT.repos;
+  if (q) repos = repos.filter(r => (r.name || '').toLowerCase().includes(q) || (r.language || '').toLowerCase().includes(q));
+  let h = '<table class="table"><thead><tr><th>Repositorio</th><th>Dominio</th><th>Lenguaje</th><th>Privado</th><th class="ta-r">PRs</th><th class="ta-r">Merged</th><th class="ta-r">Commits</th><th>Último commit</th></tr></thead><tbody>';
+  for (const r of repos) {
+    if (r.error) {
+      h += `<tr><td class="mono fw6">${esc(r.name)}</td><td colspan="7"><span class="badge badge-red">${esc(r.error)}</span></td></tr>`;
+      continue;
+    }
+    h += `<tr><td class="mono fw6">${esc(r.name)}</td>
+      <td><span class="badge badge-muted">${esc(r.domain)}</span> <span class="small text-muted">${esc(r.domain_label)}</span></td>
+      <td class="small">${esc(r.language || '—')}</td>
+      <td>${r.private ? '<span class="badge badge-red">privado</span>' : '<span class="badge badge-green">público</span>'}</td>
+      <td class="ta-r mono">${r.pulls_total}</td><td class="ta-r mono">${r.pulls_merged}</td><td class="ta-r mono">${r.commits_recent}</td>
+      <td class="small text-muted"><span class="mono">${esc((r.last_commit || '').slice(0, 42))}</span><br>${fmtDT(r.last_commit_date)}</td></tr>`;
+  }
+  h += '</tbody></table>';
+  document.getElementById('gh-table').innerHTML = h;
+}
+
+/* ============================================================
+   RENDER ALL + INIT
+   ============================================================ */
+function renderAll() {
+  renderStats(); renderDashPL(); renderDashRecent(); renderDashWallet(); renderDashGithub();
+  renderOrdersTable(); renderJournal(); renderTrialBalance(); renderCatalog();
+  renderPL(); renderBalanceSheet(); renderWallet(); renderDocs(); renderGitHub();
+  renderEntryForm();
+}
+function confirmReset(run = false) {
+  if (state.ledger.entries.length && !confirm('Se reiniciará el estado actual y se volverá a ejecutar el día contable determinista (semilla 20260904). ¿Continuar?')) return;
+  runDay();
+  expandedOrders.clear(); expandedEntries.clear();
+  renderAll();
+  toast('Día contable ejecutado · 30 órdenes en partida doble · reporte regenerado');
+  showTab('panel');
+}
+
+/* init */
+fillProductSelect();
+renderOpFields();
+if (localStorage.getItem('vp-demo-theme') === 'dark') document.documentElement.classList.add('dark');
+runDay();
+renderAll();
+</script>
+</body>
+</html>
